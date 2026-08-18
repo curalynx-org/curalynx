@@ -6,9 +6,9 @@ import { SessionControls } from "@/components/session/session-controls";
 export default function SessionPage() {
   return (
     <div className="flex h-screen w-full bg-slate-50/30 dark:bg-slate-950 overflow-hidden flex-col md:flex-row">
-      {/* Left Sidebar - Live Transcript */}
-      <aside className="w-full md:w-80 lg:w-[400px] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-white dark:bg-slate-900">
-        <LiveTranscript />
+      {/* Left Sidebar - Patient Context & Extras */}
+      <aside className="w-full md:w-80 lg:w-[350px] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-white dark:bg-slate-900">
+        <PatientSidebar />
       </aside>
 
       {/* Main Center Area - AI Insights */}
@@ -21,9 +21,9 @@ export default function SessionPage() {
         </div>
       </main>
 
-      {/* Right Sidebar - Patient Context & Extras */}
-      <aside className="w-full md:w-80 lg:w-[350px] border-l border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col h-full overflow-hidden z-10">
-        <PatientSidebar />
+      {/* Right Sidebar - Live Transcript */}
+      <aside className="w-full md:w-80 lg:w-[400px] border-l border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-white dark:bg-slate-900">
+        <LiveTranscript />
       </aside>
     </div>
   );
