@@ -24,68 +24,7 @@ export function AIInsights() {
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
         
-        {/* Pain/Distress Indicator */}
-        <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Detected State</h3>
-          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 block">Mild Distress</span>
-              <span className="text-xs text-slate-500">Based on voice tone & words</span>
-            </div>
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((level) => (
-                <div 
-                  key={level} 
-                  className={`h-8 w-2 rounded-full ${
-                    level <= 2 
-                      ? 'bg-amber-400 dark:bg-amber-500' 
-                      : 'bg-slate-100 dark:bg-slate-700'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Top Section: Distress & Smart Alerts in a 2-column grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {/* Pain/Distress Indicator */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Detected State</h3>
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between h-20">
-              <div>
-                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 block">Mild Distress</span>
-                <span className="text-xs text-slate-500">Based on voice tone</span>
-              </div>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((level) => (
-                  <div 
-                    key={level} 
-                    className={`h-8 w-2 rounded-full ${
-                      level <= 2 
-                        ? 'bg-amber-400 dark:bg-amber-500' 
-                        : 'bg-slate-100 dark:bg-slate-700'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Smart Alerts */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4" /> Smart Alerts
-            </h3>
-            <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-800 p-3 rounded-xl flex gap-3 h-20">
-              <AlertTriangle className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5" />
-              <div className="overflow-hidden">
-                <p className="text-sm font-semibold text-rose-800 dark:text-rose-400">Interaction Warning</p>
-                <p className="text-xs text-rose-600/80 dark:text-rose-300 mt-1 truncate">Avoid prescribing CNS depressants with Cetirizine.</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* AI Differential Diagnosis */}
         <div>
