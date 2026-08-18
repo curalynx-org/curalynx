@@ -51,7 +51,7 @@ export function HeroSection() {
             </a>
             <a
               className="inline-flex h-11 flex-1 items-center justify-center rounded-xl px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:rounded-full"
-              href="/todays-session"
+              href="/session"
             >
               View live demo
             </a>

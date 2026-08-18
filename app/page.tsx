@@ -61,7 +61,7 @@ export default function Home() {
             Learn more about Curalynx.
           </h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
-            <a className="group rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/40" href="/todays-session">
+            <a className="group rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/40" href="/session">
               <ArrowUpRight className="size-5 text-primary" />
               <h3 className="mt-4 font-semibold text-foreground">Live demo</h3>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">Watch Curalynx turn a real consultation into structured notes.</p>
