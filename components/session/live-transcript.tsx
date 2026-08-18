@@ -45,58 +45,58 @@ export function LiveTranscript() {
   return (
     <div className="flex flex-col h-full relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between mb-8 px-8 pt-8 pb-4">
         <div className="flex items-center gap-3">
           <div className="relative flex h-3 w-3">
             {isRecording && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
             )}
-            <span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording ? 'bg-rose-500' : 'bg-slate-400'}`}></span>
+            <span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording ? 'bg-rose-500' : 'bg-zinc-400'}`}></span>
           </div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Live Transcription</h2>
+          <h2 className="text-xl font-bold text-zinc-900">Live Transcription</h2>
         </div>
         
         <button
           onClick={() => setIsRecording(!isRecording)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors ${
             isRecording 
-              ? 'bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-900/30 dark:text-rose-400' 
-              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+              ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' 
+              : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
           }`}
         >
           {isRecording ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-          {isRecording ? "Listening..." : "Paused"}
+          {isRecording ? "Listening" : "Paused"}
         </button>
       </div>
 
       {/* Transcript Area */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto space-y-6 pr-4 pb-24"
+        className="flex-1 overflow-y-auto space-y-6 px-8 pb-8"
       >
         {messages.map((msg) => (
           <div 
             key={msg.id} 
-            className={`flex gap-4 max-w-[80%] ${msg.speaker === 'doctor' ? 'ml-auto flex-row-reverse' : ''}`}
+            className={`flex gap-4 max-w-[85%] ${msg.speaker === 'doctor' ? 'ml-auto flex-row-reverse' : ''}`}
           >
             {/* Avatar */}
-            <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center border-2 ${
+            <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center border-[3px] ${
               msg.speaker === 'doctor' 
-                ? 'bg-blue-100 border-blue-200 text-blue-600 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400' 
-                : 'bg-emerald-100 border-emerald-200 text-emerald-600 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400'
+                ? 'bg-blue-50 border-blue-100 text-blue-600' 
+                : 'bg-zinc-100 border-zinc-200 text-zinc-500'
             }`}>
-              {msg.speaker === 'doctor' ? <Stethoscope className="h-4 w-4" /> : <User className="h-4 w-4" />}
+              {msg.speaker === 'doctor' ? <Stethoscope className="h-5 w-5" /> : <User className="h-5 w-5" />}
             </div>
 
             {/* Message Bubble */}
             <div className={`flex flex-col gap-1 ${msg.speaker === 'doctor' ? 'items-end' : 'items-start'}`}>
-              <span className="text-xs text-slate-500 dark:text-slate-400 px-1">
+              <span className="text-[11px] font-bold text-zinc-400 px-1 uppercase tracking-wider">
                 {msg.speaker === 'doctor' ? 'Dr. Sarah' : 'Priya'} • {msg.timestamp}
               </span>
-              <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
+              <div className={`px-5 py-3.5 rounded-[20px] text-[15px] leading-relaxed shadow-sm ${
                 msg.speaker === 'doctor'
-                  ? 'bg-blue-600 text-white rounded-tr-none'
-                  : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-none'
+                  ? 'bg-[#1E1E1E] text-white rounded-tr-sm'
+                  : 'bg-[#F4F5F7] text-zinc-800 rounded-tl-sm'
               }`}>
                 {msg.text}
               </div>
@@ -106,32 +106,20 @@ export function LiveTranscript() {
         
         {/* Typing indicator / Listening effect */}
         {isRecording && (
-          <div className="flex gap-4 max-w-[80%]">
-             <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center border-2 bg-emerald-100 border-emerald-200 text-emerald-600 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400">
-              <User className="h-4 w-4" />
+          <div className="flex gap-4 max-w-[85%]">
+             <div className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center border-[3px] bg-zinc-100 border-zinc-200 text-zinc-500">
+              <User className="h-5 w-5" />
             </div>
-            <div className="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm">
-              <span className="h-2 w-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-              <span className="h-2 w-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-              <span className="h-2 w-2 bg-slate-400 rounded-full animate-bounce"></span>
+            <div className="flex items-center gap-1.5 bg-[#F4F5F7] px-5 py-4 rounded-[20px] rounded-tl-sm shadow-sm h-[52px]">
+              <span className="h-2 w-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="h-2 w-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="h-2 w-2 bg-zinc-400 rounded-full animate-bounce"></span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Real-time SOAP notes draft (Bottom fixed) */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-            Auto-Drafting Clinical Note
-          </h3>
-          <span className="text-xs text-slate-500">Subjective</span>
-        </div>
-        <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
-          Patient reports persistent headache for the past two days, accompanied by stomach pain...
-        </p>
-      </div>
+
     </div>
   );
 }
