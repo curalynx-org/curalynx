@@ -6,9 +6,10 @@ const appointments = [
     age: 42,
     time: "10:00 AM",
     type: "Follow-up",
-    status: "upcoming",
+    status: "ready",
     avatar: "AP",
-    color: "bg-primary/10 text-primary",
+    image: "https://i.pravatar.cc/150?u=Amit",
+    color: "bg-emerald-100 text-emerald-700",
   },
   {
     name: "Sunita Devi",
@@ -17,6 +18,7 @@ const appointments = [
     type: "Consultation",
     status: "in-progress",
     avatar: "SD",
+    image: "https://i.pravatar.cc/150?u=Sunita",
     color: "bg-emerald-100 text-emerald-700",
   },
   {
@@ -26,6 +28,7 @@ const appointments = [
     type: "Check-up",
     status: "upcoming",
     avatar: "RS",
+    image: "https://i.pravatar.cc/150?u=Rahul",
     color: "bg-blue-100 text-blue-700",
   },
   {
@@ -35,6 +38,7 @@ const appointments = [
     type: "Prescription Review",
     status: "upcoming",
     avatar: "MJ",
+    image: "https://i.pravatar.cc/150?u=Meera",
     color: "bg-amber-100 text-amber-700",
   },
   {
@@ -44,6 +48,7 @@ const appointments = [
     type: "New Patient",
     status: "upcoming",
     avatar: "KM",
+    image: "https://i.pravatar.cc/150?u=Karan",
     color: "bg-purple-100 text-purple-700",
   },
 ];
@@ -62,12 +67,18 @@ export function UpcomingAppointments() {
         {appointments.map((appt) => (
           <div
             key={appt.name}
-            className="group flex items-center gap-3.5 rounded-xl border border-border/60 p-3 transition-all hover:border-primary/30 hover:shadow-sm cursor-pointer"
+            className={`group flex items-center gap-3.5 rounded-xl border p-3 transition-all hover:shadow-sm cursor-pointer ${
+              appt.status === "ready"
+                ? "border-emerald-200 bg-emerald-50/50 hover:border-emerald-300"
+                : "border-border/60 hover:border-primary/30"
+            }`}
           >
-            <div
-              className={`grid size-10 shrink-0 place-items-center rounded-full text-xs font-bold ${appt.color}`}
-            >
-              {appt.avatar}
+            <div className="relative">
+              <div
+                className={`relative grid size-10 shrink-0 place-items-center rounded-full text-xs font-bold overflow-hidden ${appt.color}`}
+              >
+                <img src={appt.image} alt={appt.name} className="w-full h-full object-cover" />
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">

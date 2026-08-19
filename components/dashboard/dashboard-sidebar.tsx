@@ -18,10 +18,10 @@ import Link from "next/link";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard", active: true },
-  { icon: CalendarDays, label: "Appointments", href: "#", active: false },
-  { icon: Users, label: "Patients", href: "#", active: false },
-  { icon: FileText, label: "Records", href: "/session", active: false },
-  { icon: BarChart3, label: "Analytics", href: "#", active: false },
+  { icon: CalendarDays, label: "Appointments", href: "/dashboard/appointments", active: false },
+  { icon: Users, label: "Patients", href: "/dashboard/patients", active: false },
+  { icon: FileText, label: "Records", href: "/dashboard/records", active: false },
+  { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics", active: false },
 ];
 
 const bottomItems = [

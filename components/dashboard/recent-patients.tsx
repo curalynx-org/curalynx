@@ -7,6 +7,7 @@ const patients = [
     lastVisit: "Today",
     diagnosis: "Tension Headache",
     avatar: "PS",
+    image: "https://i.pravatar.cc/150?u=Priya",
     color: "bg-primary/10 text-primary",
   },
   {
@@ -15,6 +16,7 @@ const patients = [
     lastVisit: "Yesterday",
     diagnosis: "Seasonal Allergy",
     avatar: "VR",
+    image: "https://i.pravatar.cc/150?u=Vikram",
     color: "bg-emerald-100 text-emerald-700",
   },
   {
@@ -23,6 +25,7 @@ const patients = [
     lastVisit: "2 days ago",
     diagnosis: "Type 2 Diabetes",
     avatar: "AG",
+    image: "https://i.pravatar.cc/150?u=Ananya",
     color: "bg-blue-100 text-blue-700",
   },
   {
@@ -31,6 +34,7 @@ const patients = [
     lastVisit: "3 days ago",
     diagnosis: "Hypertension",
     avatar: "SK",
+    image: "https://i.pravatar.cc/150?u=Sanjay",
     color: "bg-amber-100 text-amber-700",
   },
   {
@@ -39,6 +43,7 @@ const patients = [
     lastVisit: "5 days ago",
     diagnosis: "Migraine",
     avatar: "DN",
+    image: "https://i.pravatar.cc/150?u=Deepa",
     color: "bg-purple-100 text-purple-700",
   },
 ];
@@ -60,9 +65,9 @@ export function RecentPatients() {
             className="group flex items-center gap-3.5 rounded-xl border border-border/60 p-3 transition-all hover:border-primary/30 hover:shadow-sm cursor-pointer"
           >
             <div
-              className={`grid size-10 shrink-0 place-items-center rounded-full text-xs font-bold ${patient.color}`}
+              className={`relative grid size-10 shrink-0 place-items-center rounded-full text-xs font-bold overflow-hidden ${patient.color}`}
             >
-              {patient.avatar}
+              <img src={patient.image} alt={patient.name} className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
