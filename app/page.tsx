@@ -37,28 +37,14 @@ export default function Home() {
             Don't type, <span className="italic">just speak</span>
           </h1>
           <p className="mt-8 text-[18px] md:text-[22px] text-[#18181A]/60 max-w-2xl mx-auto leading-relaxed font-serif tracking-wide">
-            The clinical AI that turns your patient consultations into <span className="text-[#18181A] font-medium">structured SOAP notes</span> <br className="hidden md:block"/>
-            and <span className="text-[#18181A] font-medium">ready-to-sign prescriptions.</span>
+            The clinical AI that turns your patient consultations into <br className="hidden md:block"/>
+            <span className="text-[#18181A] font-medium">structured SOAP notes</span> and <span className="text-[#18181A] font-medium">ready-to-sign prescriptions.</span>
           </p>
           
           <div className="mt-10">
             <Link href="/session" className="bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] px-8 py-3.5 rounded-full text-[15px] font-bold transition-all hover:scale-105 shadow-sm inline-block">
               Live demo
             </Link>
-          </div>
-
-          <div className="absolute -bottom-8 md:-bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center z-30">
-            <div className="bg-[#FDFBF2] border border-[#18181A] px-5 py-3 rounded-full flex items-center shadow-[0_8px_24px_rgba(0,0,0,0.08)] bg-white/90 backdrop-blur">
-              <Mic className="h-5 w-5 text-[#18181A]" />
-              <div className="ml-3 flex gap-[3px] h-4 items-center">
-                <span className="w-[2px] h-[40%] bg-[#18181A] rounded-full animate-pulse"></span>
-                <span className="w-[2px] h-[100%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
-                <span className="w-[2px] h-[60%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
-                <span className="w-[2px] h-[80%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></span>
-                <span className="w-[2px] h-[50%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.3s' }}></span>
-                <span className="w-[2px] h-[90%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -84,12 +70,29 @@ export default function Home() {
             </text>
 
             {/* Black solid ribbon on the right simulating the processed text */}
-            <path d="M 720 710 Q 1100 710 1500 560 L 1500 510 Q 1100 660 720 660 Z" fill="#18181A" />
+            <path d="M 700 710 Q 1100 710 1500 560 L 1500 510 Q 1100 660 700 660 Z" fill="#18181A" />
             <text className="text-[15px] fill-white font-bold tracking-wide">
               <textPath href="#ribbonPath3" startOffset="3%">
                 vitals are stable. Prescribed amoxicillin 500mg. Follow up in two weeks.
               </textPath>
             </text>
+
+            {/* The Integrated Pill - Perfectly pinned to x=700 */}
+            <foreignObject x="640" y="660" width="120" height="50">
+              <div className="w-full h-full flex items-center justify-center pointer-events-auto">
+                <div className="bg-[#FDFBF2] border border-[#18181A] px-4 py-2.5 rounded-full flex items-center shadow-md scale-90 md:scale-100">
+                  <Mic className="h-4 w-4 md:h-5 md:w-5 text-[#18181A]" />
+                  <div className="ml-2 flex gap-[2px] md:gap-[3px] h-3 md:h-4 items-center">
+                    <span className="w-[1.5px] md:w-[2px] h-[40%] bg-[#18181A] rounded-full animate-pulse"></span>
+                    <span className="w-[1.5px] md:w-[2px] h-[100%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                    <span className="w-[1.5px] md:w-[2px] h-[60%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                    <span className="w-[1.5px] md:w-[2px] h-[80%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></span>
+                    <span className="w-[1.5px] md:w-[2px] h-[50%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.3s' }}></span>
+                    <span className="w-[1.5px] md:w-[2px] h-[90%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></span>
+                  </div>
+                </div>
+              </div>
+            </foreignObject>
           </svg>
         </div>
       </section>

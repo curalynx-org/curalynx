@@ -49,19 +49,19 @@ export function LiveTranscript() {
         <div className="flex items-center gap-3">
           <div className="relative flex h-3 w-3">
             {isRecording && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0B392A] opacity-75"></span>
             )}
-            <span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording ? 'bg-rose-500' : 'bg-zinc-400'}`}></span>
+            <span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording ? 'bg-[#0B392A]' : 'bg-[#18181A]/40'}`}></span>
           </div>
-          <h2 className="text-xl font-bold text-zinc-900">Live Transcription</h2>
+          <h2 className="text-2xl font-serif text-[#18181A]">Live Transcription</h2>
         </div>
         
         <button
           onClick={() => setIsRecording(!isRecording)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors border ${
             isRecording 
-              ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' 
-              : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+              ? 'bg-[#0B392A] text-white border-[#0B392A] hover:bg-[#07241A]' 
+              : 'bg-transparent text-[#18181A] border-[#18181A]/20 hover:bg-[#18181A]/5'
           }`}
         >
           {isRecording ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
@@ -80,23 +80,23 @@ export function LiveTranscript() {
             className={`flex gap-4 max-w-[85%] ${msg.speaker === 'doctor' ? 'ml-auto flex-row-reverse' : ''}`}
           >
             {/* Avatar */}
-            <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center border-[3px] ${
+            <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center border ${
               msg.speaker === 'doctor' 
-                ? 'bg-blue-50 border-blue-100 text-blue-600' 
-                : 'bg-zinc-100 border-zinc-200 text-zinc-500'
+                ? 'bg-[#E9D5FF] border-[#18181A] text-[#18181A]' 
+                : 'bg-white border-[#18181A]/20 text-[#18181A]/60'
             }`}>
               {msg.speaker === 'doctor' ? <Stethoscope className="h-5 w-5" /> : <User className="h-5 w-5" />}
             </div>
 
             {/* Message Bubble */}
             <div className={`flex flex-col gap-1 ${msg.speaker === 'doctor' ? 'items-end' : 'items-start'}`}>
-              <span className="text-[11px] font-bold text-zinc-400 px-1 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#18181A]/40 px-1 uppercase tracking-wider">
                 {msg.speaker === 'doctor' ? 'Dr. Sarah' : 'Priya'} • {msg.timestamp}
               </span>
-              <div className={`px-5 py-3.5 rounded-[20px] text-[15px] leading-relaxed shadow-sm ${
+              <div className={`px-5 py-3.5 rounded-[20px] text-[15px] leading-relaxed shadow-sm border ${
                 msg.speaker === 'doctor'
-                  ? 'bg-[#1E1E1E] text-white rounded-tr-sm'
-                  : 'bg-[#F4F5F7] text-zinc-800 rounded-tl-sm'
+                  ? 'bg-[#18181A] text-white border-[#18181A] rounded-tr-sm'
+                  : 'bg-[#FDFBF2] text-[#18181A] border-[#18181A]/10 rounded-tl-sm'
               }`}>
                 {msg.text}
               </div>
@@ -107,13 +107,13 @@ export function LiveTranscript() {
         {/* Typing indicator / Listening effect */}
         {isRecording && (
           <div className="flex gap-4 max-w-[85%]">
-             <div className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center border-[3px] bg-zinc-100 border-zinc-200 text-zinc-500">
+             <div className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center border bg-white border-[#18181A]/20 text-[#18181A]/60">
               <User className="h-5 w-5" />
             </div>
-            <div className="flex items-center gap-1.5 bg-[#F4F5F7] px-5 py-4 rounded-[20px] rounded-tl-sm shadow-sm h-[52px]">
-              <span className="h-2 w-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-              <span className="h-2 w-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-              <span className="h-2 w-2 bg-zinc-400 rounded-full animate-bounce"></span>
+            <div className="flex items-center gap-1.5 bg-[#FDFBF2] border border-[#18181A]/10 px-5 py-4 rounded-[20px] rounded-tl-sm shadow-sm h-[52px]">
+              <span className="h-2 w-2 bg-[#18181A]/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="h-2 w-2 bg-[#18181A]/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="h-2 w-2 bg-[#18181A]/40 rounded-full animate-bounce"></span>
             </div>
           </div>
         )}
