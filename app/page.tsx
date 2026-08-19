@@ -25,8 +25,8 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-4 border-l border-[#18181A]/10 pl-8">
-            <Link href="/dashboard" className="text-[13px] font-bold text-[#18181A] hover:opacity-70 transition-opacity">
-              Dashboard
+            <Link href="/login" className="text-[13px] font-bold text-[#18181A] hover:opacity-70 transition-opacity">
+              Log in
             </Link>
             <Link href="/session" className="bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] px-5 py-2 rounded-lg text-[13px] font-bold transition-colors">
               Live demo
