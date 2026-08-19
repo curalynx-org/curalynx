@@ -24,7 +24,10 @@ export default function Home() {
             <Link href="#company" className="hover:opacity-70 transition-opacity flex items-center gap-1">Company <ChevronRight className="h-3 w-3 rotate-90 opacity-50"/></Link>
           </div>
           
-          <div className="flex items-center border-l border-[#18181A]/10 pl-8">
+          <div className="flex items-center gap-4 border-l border-[#18181A]/10 pl-8">
+            <Link href="/dashboard" className="text-[13px] font-bold text-[#18181A] hover:opacity-70 transition-opacity">
+              Dashboard
+            </Link>
             <Link href="/session" className="bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] px-5 py-2 rounded-lg text-[13px] font-bold transition-colors">
               Live demo
             </Link>
@@ -41,9 +44,12 @@ export default function Home() {
             <span className="text-[#18181A] font-medium">structured SOAP notes</span> and <span className="text-[#18181A] font-medium">ready-to-sign prescriptions.</span>
           </p>
           
-          <div className="mt-10">
+          <div className="mt-10 flex items-center justify-center gap-4 z-30 relative pointer-events-auto">
             <Link href="/session" className="bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] px-8 py-3.5 rounded-full text-[15px] font-bold transition-all hover:scale-105 shadow-sm inline-block">
               Live demo
+            </Link>
+            <Link href="/dashboard" className="bg-[#FDFBF2] border border-[#18181A] hover:bg-[#18181A]/5 text-[#18181A] px-8 py-3.5 rounded-full text-[15px] font-bold transition-all hover:scale-105 shadow-sm inline-block">
+              Dashboard
             </Link>
           </div>
         </div>

@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/get-started", active: true },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard", active: true },
   { icon: CalendarDays, label: "Appointments", href: "#", active: false },
   { icon: Users, label: "Patients", href: "#", active: false },
   { icon: FileText, label: "Records", href: "/session", active: false },
