@@ -48,6 +48,7 @@
 
   --font-sans: var(--font-sans);
   --font-heading: var(--font-heading);
+  --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
 
   --radius-sm: calc(var(--radius) - 4px);
