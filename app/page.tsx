@@ -7,57 +7,91 @@ export default function Home() {
     <main className="font-sans text-[#18181A] selection:bg-[#E9D5FF] selection:text-[#18181A] overflow-hidden">
       
       {/* --- HERO SECTION (CREAM) --- */}
-      <section className="bg-[#FDFBF2] min-h-screen relative flex flex-col items-center justify-center pt-24 pb-16 px-6">
+      <section className="bg-[#FDFBF2] min-h-screen relative flex flex-col items-center pt-8 pb-16 px-6 overflow-hidden">
         
-        {/* Navbar inside hero context */}
-        <nav className="absolute top-0 w-full flex items-center justify-between p-6 max-w-[1400px] mx-auto left-0 right-0 z-50">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-2xl tracking-tighter">CuraLynx</span>
+        {/* Navbar */}
+        <nav className="w-full max-w-[1200px] mx-auto bg-transparent border border-[#18181A]/20 rounded-xl px-4 py-3 flex items-center justify-between relative z-50 shadow-sm">
+          <div className="flex items-center gap-2 pr-8 border-r border-[#18181A]/10">
+            <Activity className="h-5 w-5 text-[#18181A]" />
+            <span className="font-bold text-xl tracking-tighter">CuraLynx</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-[13px] font-semibold text-[#18181A]">
-            <Link href="#features" className="hover:opacity-70 transition-opacity">Features</Link>
-            <Link href="#workflows" className="hover:opacity-70 transition-opacity">Workflows</Link>
-            <Link href="#reviews" className="hover:opacity-70 transition-opacity">Reviews</Link>
-            <Link href="#company" className="hover:opacity-70 transition-opacity">Company</Link>
+          
+          <div className="hidden md:flex items-center gap-6 text-[13px] font-medium text-[#18181A]">
+            <Link href="#product" className="hover:opacity-70 transition-opacity flex items-center gap-1">Product <ChevronRight className="h-3 w-3 rotate-90 opacity-50"/></Link>
+            <Link href="#individuals" className="hover:opacity-70 transition-opacity flex items-center gap-1">Individuals <ChevronRight className="h-3 w-3 rotate-90 opacity-50"/></Link>
+            <Link href="#business" className="hover:opacity-70 transition-opacity">Business</Link>
+            <Link href="#resources" className="hover:opacity-70 transition-opacity flex items-center gap-1">Resources <ChevronRight className="h-3 w-3 rotate-90 opacity-50"/></Link>
+            <Link href="#company" className="hover:opacity-70 transition-opacity flex items-center gap-1">Company <ChevronRight className="h-3 w-3 rotate-90 opacity-50"/></Link>
           </div>
-          <div className="flex items-center">
-            <Link href="/session" className="bg-[#E9D5FF] hover:bg-[#D8B4FE] text-[#18181A] px-5 py-2 rounded-full text-[13px] font-bold transition-colors">
-              Get Started
+          
+          <div className="flex items-center border-l border-[#18181A]/10 pl-8">
+            <Link href="/session" className="bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] px-5 py-2 rounded-lg text-[13px] font-bold transition-colors">
+              Live demo
             </Link>
           </div>
         </nav>
 
         {/* Hero Content */}
-        <div className="text-center relative z-10 max-w-4xl mx-auto mt-16 md:mt-0 flex flex-col items-center">
-          <h1 className="font-serif text-[60px] md:text-[90px] lg:text-[110px] leading-[1.1] tracking-tight text-[#18181A]">
-            Don't type, <span className="italic opacity-80">just consult</span>
+        <div className="text-center relative z-20 max-w-4xl mx-auto mt-24 flex flex-col items-center pb-32">
+          <h1 className="font-serif text-[60px] md:text-[90px] lg:text-[110px] leading-[1] tracking-tight text-[#18181A]">
+            Don't type, <span className="italic">just speak</span>
           </h1>
-          <p className="mt-8 text-base md:text-lg text-[#18181A]/70 max-w-lg mx-auto leading-relaxed">
-            The AI clinical documentation tool that captures the full clinical narrative while you focus on the patient.
+          <p className="mt-8 text-[18px] md:text-[22px] text-[#18181A]/60 max-w-2xl mx-auto leading-relaxed font-serif tracking-wide">
+            The clinical AI that turns your patient consultations into <span className="text-[#18181A] font-medium">structured SOAP notes</span> <br className="hidden md:block"/>
+            and <span className="text-[#18181A] font-medium">ready-to-sign prescriptions.</span>
           </p>
           
-          <div className="mt-10 flex flex-col sm:flex-row items-center gap-4">
-            <Link href="/session" className="bg-[#E9D5FF] hover:bg-[#D8B4FE] text-[#18181A] px-8 py-4 rounded-full text-[15px] font-bold transition-all hover:scale-105 shadow-sm">
-              Try CuraLynx free
+          <div className="mt-10">
+            <Link href="/session" className="bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] px-8 py-3.5 rounded-full text-[15px] font-bold transition-all hover:scale-105 shadow-sm inline-block">
+              Live demo
             </Link>
           </div>
 
-          <p className="mt-6 text-[11px] font-medium tracking-widest text-[#18181A]/40 uppercase">
-            Available on Web, iOS, and Android
-          </p>
+          <div className="absolute -bottom-8 md:-bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center z-30">
+            <div className="bg-[#FDFBF2] border border-[#18181A] px-5 py-3 rounded-full flex items-center shadow-[0_8px_24px_rgba(0,0,0,0.08)] bg-white/90 backdrop-blur">
+              <Mic className="h-5 w-5 text-[#18181A]" />
+              <div className="ml-3 flex gap-[3px] h-4 items-center">
+                <span className="w-[2px] h-[40%] bg-[#18181A] rounded-full animate-pulse"></span>
+                <span className="w-[2px] h-[100%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                <span className="w-[2px] h-[60%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                <span className="w-[2px] h-[80%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></span>
+                <span className="w-[2px] h-[50%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.3s' }}></span>
+                <span className="w-[2px] h-[90%] bg-[#18181A] rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Hand-drawn SVG Swoosh connected to pill */}
-        <div className="w-full flex justify-center mt-12 relative h-40">
-           <svg className="absolute top-0 w-full h-full text-[#18181A]/20" viewBox="0 0 1000 200" preserveAspectRatio="none" fill="none">
-             <path d="M-100,50 Q400,200 500,100 T1100,50" stroke="currentColor" strokeWidth="2" strokeDasharray="6 6" />
-           </svg>
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0B392A] text-white px-6 py-3 rounded-full flex items-center gap-3 shadow-lg z-20">
-             <Mic className="h-4 w-4" />
-             <span className="text-[13px] font-bold">Start dictating</span>
-           </div>
-        </div>
+        {/* Thread Text SVG */}
+        <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+          <svg className="w-full h-full" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <path id="ribbonPath1" d="M -100 400 C 100 300, 150 200, 200 300 C 250 400, 100 500, -100 400" />
+              <path id="ribbonPath2" d="M -10 500 Q 400 700 700 700 T 1500 550" />
+              <path id="ribbonPath3" d="M 700 700 Q 1100 700 1500 550" />
+            </defs>
+            
+            {/* Light gray looping text on the left */}
+            <text className="text-[15px] fill-[#18181A]/40 font-medium tracking-wide">
+              <textPath href="#ribbonPath1" startOffset="0%">
+                patient presented with a mild cough and some fatigue over the last few days, going to handle the first part of the
+              </textPath>
+            </text>
+            <text className="text-[15px] fill-[#18181A]/40 font-medium tracking-wide">
+              <textPath href="#ribbonPath2" startOffset="0%">
+                assessment was really good and I think their vitals are stable. Also, I told the team that the new treatment plan
+              </textPath>
+            </text>
 
+            {/* Black solid ribbon on the right simulating the processed text */}
+            <path d="M 720 710 Q 1100 710 1500 560 L 1500 510 Q 1100 660 720 660 Z" fill="#18181A" />
+            <text className="text-[15px] fill-white font-bold tracking-wide">
+              <textPath href="#ribbonPath3" startOffset="3%">
+                vitals are stable. Prescribed amoxicillin 500mg. Follow up in two weeks.
+              </textPath>
+            </text>
+          </svg>
+        </div>
       </section>
 
       {/* --- CROSS-PLATFORM SECTION (DARK) --- */}
