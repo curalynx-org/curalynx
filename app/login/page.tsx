@@ -1,12 +1,17 @@
-import { Activity, ArrowRight, CheckCircle2 } from "lucide-react";
+"use client";
+
+import { Activity, ArrowRight, CheckCircle2, User, Stethoscope } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function LoginPage() {
+  const [role, setRole] = useState<"provider" | "patient">("provider");
+
   return (
     <div className="flex min-h-screen w-full bg-[#FDFBF2] overflow-hidden">
       
       {/* LEFT SIDE: Immersive Visual Area */}
-      <div className="hidden lg:flex w-[55%] bg-[#0B392A] relative flex-col justify-between p-12 overflow-hidden">
+      <div className="hidden lg:flex w-[55%] bg-[#0B392A] relative flex-col justify-between p-12 overflow-hidden transition-colors duration-700">
         
         {/* Animated Abstract Mesh/Topography */}
         <div className="absolute inset-0 pointer-events-none opacity-40">
@@ -40,27 +45,46 @@ export default function LoginPage() {
           <span className="font-serif font-bold text-2xl tracking-tight text-[#FDFBF2]">CuraLynx</span>
         </Link>
 
-        {/* Testimonial / Value Prop */}
-        <div className="relative z-10 max-w-lg mb-12">
+        {/* Testimonial / Value Prop based on Role */}
+        <div className="relative z-10 max-w-lg mb-12 animate-in fade-in duration-500" key={role}>
           <div className="flex gap-2 mb-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-1 bg-[#18181A]/40 backdrop-blur-md rounded-full px-3 py-1 border border-[#FDFBF2]/10">
+            <div className="flex items-center gap-1 bg-[#18181A]/40 backdrop-blur-md rounded-full px-3 py-1 border border-[#FDFBF2]/10">
+              <CheckCircle2 className="size-3.5 text-[#E9D5FF]" />
+              <span className="text-xs font-semibold text-[#FDFBF2]">HIPAA Compliant</span>
+            </div>
+            {role === "patient" && (
+              <div className="flex items-center gap-1 bg-[#18181A]/40 backdrop-blur-md rounded-full px-3 py-1 border border-[#FDFBF2]/10">
                 <CheckCircle2 className="size-3.5 text-[#E9D5FF]" />
-                <span className="text-xs font-semibold text-[#FDFBF2]">HIPAA Compliant</span>
+                <span className="text-xs font-semibold text-[#FDFBF2]">Secure Patient Portal</span>
               </div>
-            ))}
+            )}
           </div>
+          
           <h2 className="font-serif text-[42px] leading-[1.1] text-[#FDFBF2] mb-6">
-            The standard of care for modern medical practices.
+            {role === "provider" 
+              ? "The standard of care for modern medical practices." 
+              : "Your health records, appointments, and care team in one place."}
           </h2>
+          
           <p className="text-[#FDFBF2]/70 text-lg font-medium leading-relaxed">
-            "CuraLynx has completely eliminated our after-hours charting. It's not just a tool; it's practically a new staff member."
+            {role === "provider"
+              ? "\"CuraLynx has completely eliminated our after-hours charting. It's not just a tool; it's practically a new staff member.\""
+              : "\"I love how easy it is to book an appointment and view my test results without calling the front desk. It gives me peace of mind.\""}
           </p>
+          
           <div className="mt-6 flex items-center gap-4">
-            <img src="https://i.pravatar.cc/150?u=doc" alt="Doctor" className="size-12 rounded-full border-2 border-[#FDFBF2]/20" />
+            <img 
+              src={role === "provider" ? "https://i.pravatar.cc/150?u=doc" : "https://i.pravatar.cc/150?u=patient"} 
+              alt={role === "provider" ? "Doctor" : "Patient"} 
+              className="size-12 rounded-full border-2 border-[#FDFBF2]/20" 
+            />
             <div>
-              <p className="font-bold text-[#FDFBF2]">Dr. Sarah Chen</p>
-              <p className="text-sm text-[#FDFBF2]/60">Chief of Medicine, Oakland Clinic</p>
+              <p className="font-bold text-[#FDFBF2]">
+                {role === "provider" ? "Dr. Sarah Chen" : "Emily Rodriguez"}
+              </p>
+              <p className="text-sm text-[#FDFBF2]/60">
+                {role === "provider" ? "Chief of Medicine, Oakland Clinic" : "Verified Patient"}
+              </p>
             </div>
           </div>
         </div>
@@ -78,23 +102,52 @@ export default function LoginPage() {
         </Link>
 
         <div className="w-full max-w-sm xl:max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700">
+          
+          {/* Role Toggle */}
+          <div className="flex items-center p-1 bg-[#18181A]/5 rounded-xl mb-10 w-fit mx-auto lg:mx-0">
+            <button
+              onClick={() => setRole("provider")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                role === "provider" 
+                  ? "bg-[#FDFBF2] text-[#18181A] shadow-sm border border-[#18181A]/10" 
+                  : "text-[#18181A]/50 hover:text-[#18181A]"
+              }`}
+            >
+              <Stethoscope className="size-4" />
+              Provider
+            </button>
+            <button
+              onClick={() => setRole("patient")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                role === "patient" 
+                  ? "bg-[#FDFBF2] text-[#18181A] shadow-sm border border-[#18181A]/10" 
+                  : "text-[#18181A]/50 hover:text-[#18181A]"
+              }`}
+            >
+              <User className="size-4" />
+              Patient
+            </button>
+          </div>
+
           <div className="mb-10 text-center lg:text-left">
             <h1 className="font-serif text-4xl lg:text-5xl font-bold tracking-tight text-[#18181A] mb-3">
               Welcome back
             </h1>
             <p className="text-[#18181A]/60 text-base font-medium">
-              Enter your credentials to access your dashboard.
+              {role === "provider" 
+                ? "Enter your credentials to access your dashboard." 
+                : "Sign in to access your health portal."}
             </p>
           </div>
 
           <form className="space-y-5">
             <div className="space-y-1.5 group">
               <label className="text-[11px] font-bold text-[#18181A] uppercase tracking-wider group-focus-within:text-[#0B392A] transition-colors">
-                Work Email
+                {role === "provider" ? "Work Email" : "Email or Phone Number"}
               </label>
               <input 
-                type="email" 
-                placeholder="doctor@clinic.com" 
+                type={role === "provider" ? "email" : "text"}
+                placeholder={role === "provider" ? "doctor@clinic.com" : "you@example.com"}
                 className="w-full h-12 rounded-xl border border-[#18181A]/20 bg-transparent px-4 text-[15px] font-medium text-[#18181A] placeholder:text-[#18181A]/30 focus:border-[#0B392A] focus:ring-1 focus:ring-[#0B392A] outline-none transition-all"
                 required
               />
@@ -117,8 +170,11 @@ export default function LoginPage() {
               />
             </div>
 
-            <Link href="/dashboard" className="w-full h-12 mt-4 bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] rounded-xl text-[15px] font-bold transition-all hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center gap-2 group shadow-sm">
-              Sign In to Workspace
+            <Link 
+              href={role === "provider" ? "/dashboard" : "/patient/portal"} 
+              className="w-full h-12 mt-4 bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] rounded-xl text-[15px] font-bold transition-all hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center gap-2 group shadow-sm"
+            >
+              {role === "provider" ? "Sign In to Workspace" : "Access Patient Portal"}
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </form>
@@ -127,7 +183,7 @@ export default function LoginPage() {
             <p className="text-sm font-medium text-[#18181A]/60">
               Don't have an account?{" "}
               <Link href="#" className="font-bold text-[#18181A] hover:underline underline-offset-4 decoration-2 decoration-[#E9D5FF]">
-                Request access
+                {role === "provider" ? "Request access" : "Register here"}
               </Link>
             </p>
           </div>
