@@ -1,4 +1,4 @@
-import { ArrowUpRight, CheckCircle2, ChevronRight, Mic, Play, Sparkles, Activity, FileText } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, ChevronRight, Mic, Play, Sparkles, Activity, FileText, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -180,20 +180,38 @@ export default function Home() {
           </div>
 
           {/* Large Video/Image Placeholder */}
-          <div className="relative w-full aspect-[16/9] md:aspect-[21/9] bg-zinc-200 rounded-3xl overflow-hidden shadow-2xl">
-            {/* Replace with actual image */}
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1576091160550-2173ff9e5ee5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-90"></div>
-            <div className="absolute inset-0 bg-black/20"></div>
-            
-            {/* Speed Comparison Overlays */}
-            <div className="absolute top-1/2 -translate-y-1/2 left-8 md:left-24 bg-white/90 backdrop-blur p-6 rounded-2xl shadow-lg border border-white/40 flex flex-col items-center">
-              <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Typing</span>
-              <span className="text-4xl font-serif text-[#18181A]">45 <span className="text-xl font-sans text-zinc-400">wpm</span></span>
+          <div className="relative w-full aspect-[16/9] md:aspect-[21/9] bg-zinc-100 rounded-3xl overflow-hidden shadow-2xl border border-[#18181A]/10">
+            {/* UI Mockup Background */}
+            <div className="absolute inset-0 bg-white p-8 grid grid-cols-[1fr_300px] gap-8 opacity-40 blur-[2px] pointer-events-none">
+              <div className="border border-zinc-200 rounded-xl p-6 flex flex-col gap-4 bg-zinc-50/50">
+                 <div className="flex items-center gap-4 mb-4 border-b border-zinc-200 pb-4">
+                   <div className="h-12 w-12 bg-zinc-200 rounded-full"></div>
+                   <div>
+                     <div className="h-4 w-32 bg-zinc-200 rounded mb-2"></div>
+                     <div className="h-3 w-24 bg-zinc-200 rounded"></div>
+                   </div>
+                 </div>
+                 <div className="h-32 w-full bg-white border border-zinc-200 rounded-xl"></div>
+                 <div className="h-4 w-3/4 bg-zinc-200 rounded mt-4"></div>
+                 <div className="h-4 w-1/2 bg-zinc-200 rounded"></div>
+                 <div className="h-4 w-5/6 bg-zinc-200 rounded"></div>
+              </div>
+              <div className="flex flex-col gap-4">
+                 <div className="h-32 w-full bg-emerald-50 border border-emerald-100 rounded-xl"></div>
+                 <div className="h-32 w-full bg-blue-50 border border-blue-100 rounded-xl"></div>
+                 <div className="h-32 w-full bg-purple-50 border border-purple-100 rounded-xl"></div>
+              </div>
             </div>
             
-            <div className="absolute top-1/2 -translate-y-1/2 right-8 md:right-24 bg-[#0B392A]/90 backdrop-blur p-6 rounded-2xl shadow-lg border border-[#0B392A]/40 flex flex-col items-center text-white">
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-2">CuraLynx</span>
-              <span className="text-4xl font-serif">150+ <span className="text-xl font-sans text-emerald-200/50">wpm</span></span>
+            {/* Speed Comparison Overlays */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-8 md:left-24 bg-white/90 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-2xl border border-white flex flex-col items-center transform -rotate-2 hover:rotate-0 transition-transform">
+              <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Manual Typing</span>
+              <span className="text-4xl md:text-5xl font-serif text-[#18181A]">45 <span className="text-xl font-sans text-zinc-400">wpm</span></span>
+            </div>
+            
+            <div className="absolute top-1/2 -translate-y-1/2 right-8 md:right-24 bg-[#0B392A]/95 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-2xl border border-[#0B392A]/40 flex flex-col items-center text-white transform rotate-2 hover:rotate-0 transition-transform">
+              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-2">With CuraLynx</span>
+              <span className="text-4xl md:text-6xl font-serif">150+ <span className="text-xl font-sans text-emerald-200/50">wpm</span></span>
             </div>
           </div>
         </div>
@@ -220,22 +238,41 @@ export default function Home() {
                 <span className="px-4 py-2 rounded-full border border-white/10 text-xs font-semibold">Rx Generation</span>
               </div>
             </div>
-            
-            <div className="flex-1 relative">
+                       <div className="flex-1 relative">
                <div className="w-full aspect-square bg-[#0B392A] rounded-full absolute -top-10 -right-10 opacity-50 blur-3xl"></div>
                <div className="bg-[#212124] border border-white/10 rounded-3xl p-8 relative z-10 shadow-2xl">
-                 <div className="flex items-center gap-4 mb-8">
-                   <div className="h-12 w-12 rounded-full bg-[#E9D5FF] flex items-center justify-center"><Activity className="text-[#18181A] h-6 w-6"/></div>
+                 <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-6">
+                   <div className="h-12 w-12 rounded-full bg-[#E9D5FF] flex items-center justify-center shrink-0">
+                     <Activity className="text-[#18181A] h-6 w-6"/>
+                   </div>
                    <div>
-                     <p className="font-bold text-sm">One Tool. Any Workflow.</p>
-                     <p className="text-xs text-white/40">Say "Start Subjective" and it listens.</p>
+                     <p className="font-bold text-sm text-white">Live Transcription</p>
+                     <p className="text-xs text-white/40">Listening... "Start Subjective"</p>
                    </div>
                  </div>
-                 <div className="space-y-3">
-                   <div className="h-4 w-3/4 bg-white/5 rounded-full"></div>
-                   <div className="h-4 w-full bg-white/5 rounded-full"></div>
-                   <div className="h-4 w-5/6 bg-white/5 rounded-full"></div>
-                   <div className="h-4 w-1/2 bg-white/5 rounded-full"></div>
+                 <div className="space-y-6">
+                   <div className="flex gap-4 items-start">
+                      <span className="text-xs font-bold text-emerald-400 mt-1 shrink-0">Dr. Chen</span>
+                      <p className="text-[13px] text-white/80 leading-relaxed bg-white/5 p-3 rounded-2xl rounded-tl-sm border border-white/5">
+                        "Patient is a 45-year-old male presenting with acute lower back pain radiating to the left leg, which started 3 days ago after lifting heavy boxes."
+                      </p>
+                   </div>
+                   <div className="flex gap-4 items-start flex-row-reverse">
+                      <span className="text-xs font-bold text-blue-400 mt-1 shrink-0">Patient</span>
+                      <p className="text-[13px] text-white/80 leading-relaxed bg-blue-500/10 p-3 rounded-2xl rounded-tr-sm border border-blue-500/20 text-right">
+                        "Yeah, it’s mostly a sharp pain, and it hurts a lot when I try to bend over or sit for too long."
+                      </p>
+                   </div>
+                   <div className="flex gap-4 items-start">
+                      <span className="text-xs font-bold text-emerald-400 mt-1 shrink-0">Dr. Chen</span>
+                      <div className="flex items-center gap-2 bg-white/5 p-3 rounded-2xl rounded-tl-sm border border-white/5">
+                        <div className="flex gap-1">
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></span>
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                        </div>
+                      </div>
+                   </div>
                  </div>
                </div>
             </div>
@@ -248,15 +285,23 @@ export default function Home() {
             <div className="flex flex-col items-center text-center">
               <div className="w-full aspect-[4/3] bg-[#FDFBF2] rounded-3xl mb-8 overflow-hidden relative border border-white/10 flex items-center justify-center p-8">
                 {/* Visual */}
-                <div className="bg-white rounded-xl shadow-xl w-full h-full p-4 flex flex-col">
-                  <div className="h-3 w-1/4 bg-zinc-200 rounded-full mb-4"></div>
-                  <div className="space-y-2 mb-auto">
-                    <div className="h-2 w-full bg-zinc-100 rounded-full"></div>
-                    <div className="h-2 w-full bg-zinc-100 rounded-full"></div>
-                    <div className="h-2 w-3/4 bg-zinc-100 rounded-full"></div>
+                <div className="bg-white rounded-xl shadow-xl w-full h-full p-6 flex flex-col border border-[#18181A]/10 text-left relative overflow-hidden">
+                  <div className="flex justify-between items-center mb-6">
+                     <h4 className="font-bold text-[#18181A] text-sm">SOAP Note</h4>
+                     <span className="text-[10px] font-bold px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full">Auto-generated</span>
                   </div>
-                  <div className="bg-[#E9D5FF]/20 text-[#18181A] text-[10px] font-bold p-3 rounded-lg border border-[#E9D5FF]">
-                    <Sparkles className="h-3 w-3 inline mr-1 text-purple-500" /> AI automatically structures the narrative into SOAP format.
+                  <div className="space-y-4 mb-auto">
+                    <div>
+                      <h5 className="text-[11px] font-bold text-[#18181A]/50 uppercase tracking-wider mb-1.5 flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div> Subjective</h5>
+                      <p className="text-[13px] text-[#18181A]/80 font-medium leading-snug">45yo male c/o acute lower back pain radiating to L leg x 3 days. Exacerbated by bending/sitting. No hx of trauma.</p>
+                    </div>
+                    <div>
+                      <h5 className="text-[11px] font-bold text-[#18181A]/50 uppercase tracking-wider mb-1.5 flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Objective</h5>
+                      <p className="text-[13px] text-[#18181A]/80 font-medium leading-snug">Pending physical exam. Vitals within normal limits. Patient appears uncomfortable sitting.</p>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-r from-[#E9D5FF]/30 to-transparent text-[#18181A] text-[11px] font-bold p-3 rounded-xl border border-[#E9D5FF] mt-4 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-purple-600" /> Formatted in 1.2s
                   </div>
                 </div>
               </div>
@@ -283,8 +328,26 @@ export default function Home() {
              <div className="flex flex-col items-center text-center">
               <div className="w-full aspect-[4/3] bg-[#212124] rounded-3xl mb-8 overflow-hidden relative border border-white/10 flex items-center justify-center p-8">
                 {/* Visual */}
-                <div className="text-center font-serif text-[80px] text-white/10 font-bold leading-none mt-10">
-                  Rx.
+                <div className="bg-[#18181A] rounded-xl shadow-2xl w-full h-full p-6 flex flex-col relative border border-white/10 text-left overflow-hidden">
+                   <div className="absolute top-4 right-4 text-[60px] font-serif text-white/5 opacity-50 select-none pointer-events-none">Rx</div>
+                   <h4 className="font-bold text-white text-sm mb-4">Ready to Sign</h4>
+                   
+                   <div className="bg-white/5 p-4 rounded-xl border border-white/10 mb-auto relative">
+                     <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 rounded-l-xl"></div>
+                     <div className="flex justify-between items-start mb-2 pl-2">
+                       <span className="font-bold text-emerald-400 text-sm">Lisinopril</span>
+                       <span className="text-[10px] bg-white/10 px-2 py-1 rounded text-white/70 font-bold">10mg</span>
+                     </div>
+                     <p className="text-[11px] text-white/60 mb-3 pl-2">Take 1 tablet by mouth daily for hypertension.</p>
+                     <div className="flex justify-between items-center border-t border-white/10 pt-3 mt-3 pl-2">
+                       <span className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Dispense: 30</span>
+                       <span className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Refills: 3</span>
+                     </div>
+                   </div>
+                   
+                   <button className="w-full py-3 bg-emerald-500/20 text-emerald-400 text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-emerald-500/30 transition-colors border border-emerald-500/20 mt-4">
+                     E-Prescribe
+                   </button>
                 </div>
               </div>
               <h3 className="font-serif text-3xl mb-3">Smart Prescriptions</h3>
@@ -294,9 +357,28 @@ export default function Home() {
              {/* Feature 4 */}
              <div className="flex flex-col items-center text-center md:mt-24">
               <div className="w-full aspect-[4/3] bg-gradient-to-br from-indigo-900 to-[#18181A] rounded-3xl mb-8 overflow-hidden relative border border-white/10 flex items-center justify-center p-8">
-                <div className="text-center">
-                  <span className="font-serif text-[60px] text-white block leading-none">15+</span>
-                  <span className="text-[14px] font-bold text-white/60 tracking-widest uppercase">Languages</span>
+                {/* Visual */}
+                <div className="w-full h-full flex flex-col justify-center gap-4 relative z-10">
+                  <div className="flex flex-col bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
+                    <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2 text-left">Spanish (Patient)</span>
+                    <p className="text-sm text-white/90 text-left font-medium">"Me duele mucho la cabeza y siento náuseas desde ayer."</p>
+                  </div>
+                  
+                  <div className="flex justify-center -my-2 relative z-20">
+                     <div className="bg-indigo-500 text-white rounded-full p-2 shadow-lg border border-indigo-400/30">
+                       <ArrowRight className="h-4 w-4 rotate-90 md:rotate-0" />
+                     </div>
+                  </div>
+                  
+                  <div className="flex flex-col bg-indigo-500/20 backdrop-blur rounded-xl p-4 border border-indigo-400/30">
+                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider mb-2 text-left">English (Clinical Note)</span>
+                    <p className="text-sm text-indigo-100 text-left font-medium">Patient reports severe headache and nausea starting yesterday.</p>
+                  </div>
+                </div>
+                
+                {/* Background decorative text */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+                  <span className="font-serif text-[180px] text-white font-bold leading-none">15+</span>
                 </div>
               </div>
               <h3 className="font-serif text-3xl mb-3">Global Translation</h3>
