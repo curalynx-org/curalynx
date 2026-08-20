@@ -5,9 +5,9 @@ import { SessionControls } from "@/components/session/session-controls";
 
 export default function SessionPage() {
   return (
-    <div className="flex h-screen w-full bg-[#F4F5F7] overflow-hidden flex-col md:flex-row">
+    <div className="flex h-screen w-full bg-[#FDFBF2] overflow-hidden flex-col md:flex-row font-sans text-[#18181A]">
       {/* Left Sidebar - Patient Context & Extras */}
-      <aside className="w-full md:w-80 lg:w-[350px] border-r border-zinc-200/60 flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-[#F4F5F7]">
+      <aside className="w-full md:w-80 lg:w-[350px] border-r border-[#18181A]/10 flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-transparent">
         <PatientSidebar />
       </aside>
 
@@ -22,7 +22,7 @@ export default function SessionPage() {
       </main>
 
       {/* Right Sidebar - Live Transcript */}
-      <aside className="w-full md:w-80 lg:w-[400px] flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-white shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.05)] border-l border-zinc-100">
+      <aside className="w-full md:w-80 lg:w-[400px] flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-[#FDFBF2] border-l border-[#18181A]/10">
         <LiveTranscript />
       </aside>
     </div>
