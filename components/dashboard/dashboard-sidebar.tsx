@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   HeartPulse,
   LayoutDashboard,
@@ -17,11 +18,11 @@ import {
 import Link from "next/link";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard", active: true },
-  { icon: CalendarDays, label: "Appointments", href: "/dashboard/appointments", active: false },
-  { icon: Users, label: "Patients", href: "/dashboard/patients", active: false },
-  { icon: FileText, label: "Records", href: "/dashboard/records", active: false },
-  { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics", active: false },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+  { icon: CalendarDays, label: "Appointments", href: "/dashboard/appointments" },
+  { icon: Users, label: "Patients", href: "/dashboard/patients" },
+  { icon: FileText, label: "Records", href: "/dashboard/records" },
+  { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
 ];
 
 const bottomItems = [
@@ -31,6 +32,7 @@ const bottomItems = [
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
 
   return (
     <aside
@@ -62,20 +64,23 @@ export function DashboardSidebar() {
           Menu
         </p>
         <nav className="flex flex-col gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                item.active
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <item.icon className="size-[18px] shrink-0" />
-              {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const active = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard");
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <item.icon className="size-[18px] shrink-0" />
+                {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
