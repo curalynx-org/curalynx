@@ -66,12 +66,14 @@ export default function Home() {
             {/* Light gray looping text on the left */}
             <text className="text-[15px] fill-[#18181A]/40 font-medium tracking-wide">
               <textPath href="#ribbonPath1" startOffset="0%">
-                patient presented with a mild cough and some fatigue over the last few days, going to handle the first part of the
+                {Array(20).fill("patient presented with a mild cough and some fatigue over the last few days, going to handle the first part of the assessment was really good and I think their vitals are stable. ").join(" ")}
+                <animate attributeName="startOffset" from="0%" to="-100%" dur="40s" repeatCount="indefinite" />
               </textPath>
             </text>
             <text className="text-[15px] fill-[#18181A]/40 font-medium tracking-wide">
               <textPath href="#ribbonPath2" startOffset="0%">
-                assessment was really good and I think their vitals are stable. Also, I told the team that the new treatment plan
+                {Array(20).fill("assessment was really good and I think their vitals are stable. Also, I told the team that the new treatment plan ").join(" ")}
+                <animate attributeName="startOffset" from="0%" to="-100%" dur="50s" repeatCount="indefinite" />
               </textPath>
             </text>
 
@@ -79,7 +81,8 @@ export default function Home() {
             <path d="M 700 710 Q 1100 710 1500 560 L 1500 510 Q 1100 660 700 660 Z" fill="#18181A" />
             <text className="text-[15px] fill-white font-bold tracking-wide">
               <textPath href="#ribbonPath3" startOffset="3%">
-                vitals are stable. Prescribed amoxicillin 500mg. Follow up in two weeks.
+                {Array(20).fill("vitals are stable. Prescribed amoxicillin 500mg. Follow up in two weeks. ").join(" ")}
+                <animate attributeName="startOffset" from="0%" to="-100%" dur="30s" repeatCount="indefinite" />
               </textPath>
             </text>
 
