@@ -5,6 +5,7 @@ import { LiveTranscript } from "@/components/session/live-transcript";
 import { AIInsights } from "@/components/session/ai-insights";
 import { SessionControls } from "@/components/session/session-controls";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Brain } from "lucide-react";
 
 export default function SessionPage() {
   const patientId = "demo-patient";
@@ -49,14 +50,34 @@ export default function SessionPage() {
           setMessages((prev) => [...prev, ...data.messages]);
         }
         if (data.insights) {
-          setInsights((prev) => ({
-            medicines: Array.from(
-              new Set([...prev.medicines, ...(data.insights.medicines || [])])
-            ),
-            tests: Array.from(
-              new Set([...prev.tests, ...(data.insights.tests || [])])
-            ),
-          }));
+          setInsights((prev) => {
+            const incomingMeds = data.insights.medicines || [];
+            const incomingMedNames = new Set(
+              incomingMeds.map((m: any) =>
+                typeof m === "string" ? m : m.name
+              )
+            );
+            const remainingMeds = prev.medicines.filter(
+              (m: any) =>
+                !incomingMedNames.has(typeof m === "string" ? m : m.name)
+            );
+
+            const incomingTests = data.insights.tests || [];
+            const incomingTestNames = new Set(
+              incomingTests.map((t: any) =>
+                typeof t === "string" ? t : t.name
+              )
+            );
+            const remainingTests = prev.tests.filter(
+              (t: any) =>
+                !incomingTestNames.has(typeof t === "string" ? t : t.name)
+            );
+
+            return {
+              medicines: [...incomingMeds, ...remainingMeds],
+              tests: [...incomingTests, ...remainingTests],
+            };
+          });
         }
       }
     } catch (err) {
@@ -85,7 +106,7 @@ export default function SessionPage() {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = false;
-      recognition.lang = selectedLang; // 'en-IN' supports Hinglish, English, Hindi words
+      recognition.lang = selectedLang;
 
       recognition.onresult = (event: any) => {
         const lastResultIndex = event.results.length - 1;
@@ -107,7 +128,6 @@ export default function SessionPage() {
       };
 
       recognition.onend = () => {
-        // Auto-restart if user has not clicked stop
         if (isRecordingRef.current) {
           try {
             recognition.start();
@@ -156,40 +176,17 @@ export default function SessionPage() {
   return (
     <div className="flex h-screen w-full bg-[#FDFBF2] overflow-hidden flex-col md:flex-row font-sans text-[#18181A]">
       {/* Left Sidebar - Patient Context & Extras */}
-      <aside className="w-full md:w-80 lg:w-[350px] border-r border-[#18181A]/10 flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-transparent">
+      <aside className="w-full md:w-72 lg:w-80 border-r border-[#18181A]/10 flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-transparent">
         <PatientSidebar />
       </aside>
 
       {/* Main Center Area - AI Insights */}
-      <main className="flex-1 flex flex-col min-w-0 h-full relative z-0 overflow-hidden bg-transparent">
-        <div className="absolute top-8 right-8 z-20 flex items-center gap-3">
-          {/* Language Selector */}
-          <select
-            value={selectedLang}
-            onChange={(e) => {
-              setSelectedLang(e.target.value);
-              if (isRecording) {
-                stopSpeechRecognition();
-                setTimeout(() => startSpeechRecognition(), 100);
-              }
-            }}
-            className="bg-[#FDFBF2] border border-[#18181A]/20 text-[#18181A] text-xs font-semibold rounded-full px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#18181A]"
-          >
-            <option value="en-IN">🇮🇳 Hinglish / English (India)</option>
-            <option value="hi-IN">🇮🇳 Hindi (हिन्दी)</option>
-            <option value="en-US">🇺🇸 English (US)</option>
-          </select>
-
-          <SessionControls />
-        </div>
-
-        <div className="flex-1 overflow-hidden pt-24 pb-8 px-6 sm:px-8 lg:px-12">
-          <AIInsights patientId={patientId} insights={insights} />
-        </div>
+      <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-transparent px-8 pt-6 pb-6">
+        <AIInsights patientId={patientId} insights={insights} />
       </main>
 
       {/* Right Sidebar - Live Transcript */}
-      <aside className="w-full md:w-80 lg:w-[400px] flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-[#FDFBF2] border-l border-[#18181A]/10">
+      <aside className="w-full md:w-80 lg:w-[420px] flex-shrink-0 flex flex-col h-full overflow-hidden bg-[#FDFBF2] border-l border-[#18181A]/10">
         <LiveTranscript
           patientId={patientId}
           messages={messages}

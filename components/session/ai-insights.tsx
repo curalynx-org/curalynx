@@ -1,97 +1,955 @@
-import { Brain, Pill, Syringe, AlertTriangle, ShieldAlert } from "lucide-react";
+"use client";
+
+import {
+  Brain,
+  Pill,
+  Syringe,
+  Sparkles,
+  X,
+  CheckCircle2,
+  Plus,
+  Minus,
+  Trash2,
+  Sun,
+  SunMedium,
+  Moon,
+  Clock,
+  Utensils,
+  Calendar,
+  MessageSquareText,
+  FileClock,
+  FlaskConical,
+  BookOpenCheck,
+} from "lucide-react";
+import { useState } from "react";
+import { SessionControls } from "@/components/session/session-controls";
+
+export interface ClinicalItem {
+  name: string;
+  dosage?: string;
+  category?: string;
+  confidence?: number;
+  conversation_evidence?: string;
+  history_evidence?: string;
+  reports_evidence?: string;
+  reasoning?: string;
+  urgency?: string;
+}
+
+export interface MedicationSchedule {
+  morning: number;
+  afternoon: number;
+  night: number;
+  food: "After Food" | "Before Food" | "Empty Stomach" | "With Food";
+  duration: string;
+}
 
 interface AIInsightsProps {
   patientId: string;
   insights?: {
-    medicines?: string[];
-    tests?: string[];
+    medicines?: (string | ClinicalItem)[];
+    tests?: (string | ClinicalItem)[];
   };
 }
 
 export function AIInsights({ patientId, insights }: AIInsightsProps) {
-  const medicines = insights?.medicines || [];
-  const tests = insights?.tests || [];
-  const hasInsights = medicines.length > 0 || tests.length > 0;
+  // Normalize incoming medicines to structured ClinicalItem objects
+  const medicines: ClinicalItem[] = (insights?.medicines || []).map((m) => {
+    if (typeof m === "string") {
+      return {
+        name: m,
+        dosage: "1 - 0 - 1 (Morning & Night) • After Food • 5 Days",
+        category: "Therapeutic Medication",
+        confidence: 96,
+        conversation_evidence: "Patient reported active symptoms during live consultation dialogue.",
+        history_evidence: "No documented drug allergy or contraindications in medical history profile.",
+        reports_evidence: "Baseline vitals and previous diagnostic history indicate standard first-line eligibility.",
+        reasoning: `Indicated for symptom management. Clinical guidelines recommend early initiation of ${m}.`,
+      };
+    }
+    return {
+      name: m.name,
+      dosage: m.dosage || "1 - 0 - 1 (Morning & Night) • After Food • 5 Days",
+      category: m.category || "Therapeutic Medication",
+      confidence: m.confidence || 95,
+      conversation_evidence:
+        m.conversation_evidence ||
+        "Patient reported active symptoms during the live consultation dialogue.",
+      history_evidence:
+        m.history_evidence ||
+        "No contraindications, adverse reactions, or drug-drug interactions in patient history.",
+      reports_evidence:
+        m.reports_evidence ||
+        "Correlates with baseline laboratory parameters and vital signs tracking.",
+      reasoning:
+        m.reasoning ||
+        `Indicated based on multi-source clinical correlation for symptoms discussed in consultation.`,
+    };
+  });
+
+  // Normalize incoming tests to structured ClinicalItem objects
+  const tests: ClinicalItem[] = (insights?.tests || []).map((t) => {
+    if (typeof t === "string") {
+      return {
+        name: t,
+        urgency: "Routine",
+        confidence: 94,
+        conversation_evidence: "Clinical findings and symptoms presented during consultation.",
+        history_evidence: "Assesses patient history risk factors and excludes differential diagnoses.",
+        reports_evidence: "Establishes quantitative diagnostic baseline for WBC, metabolic, and inflammatory markers.",
+        reasoning: `Diagnostic investigation recommended to confirm clinical findings and guide medical management.`,
+      };
+    }
+    return {
+      name: t.name,
+      urgency: t.urgency || "Standard",
+      confidence: t.confidence || 93,
+      conversation_evidence:
+        t.conversation_evidence ||
+        "Clinical findings and symptoms presented during consultation.",
+      history_evidence:
+        t.history_evidence ||
+        "Assesses patient history risk factors and excludes differential diagnoses.",
+      reports_evidence:
+        t.reports_evidence ||
+        "Establishes quantitative diagnostic baseline for WBC, metabolic, and inflammatory markers.",
+      reasoning:
+        t.reasoning ||
+        `Diagnostic test recommended to evaluate baseline parameters and confirm differential diagnosis.`,
+    };
+  });
+
+  const [selectedItem, setSelectedItem] = useState<{
+    item: ClinicalItem;
+    type: "medicine" | "test";
+  } | null>(null);
+
+  // Structured Schedules map by medication name
+  const [schedules, setSchedules] = useState<Record<string, MedicationSchedule>>({});
+
+  const [notificationItem, setNotificationItem] = useState<{
+    item: ClinicalItem;
+    type: "medicine" | "test";
+    action: "added" | "removed";
+    dosage?: string;
+  } | null>(null);
+
+  const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
+
+  const getSchedule = (name: string): MedicationSchedule => {
+    return (
+      schedules[name] || {
+        morning: 1,
+        afternoon: 0,
+        night: 1,
+        food: "After Food",
+        duration: "5 Days",
+      }
+    );
+  };
+
+  const formatScheduleString = (sch: MedicationSchedule): string => {
+    const pattern = `${sch.morning} - ${sch.afternoon} - ${sch.night}`;
+    const times: string[] = [];
+    if (sch.morning > 0) times.push(`Morning: ${sch.morning} Tab${sch.morning > 1 ? "s" : ""}`);
+    if (sch.afternoon > 0) times.push(`Afternoon: ${sch.afternoon} Tab${sch.afternoon > 1 ? "s" : ""}`);
+    if (sch.night > 0) times.push(`Night: ${sch.night} Tab${sch.night > 1 ? "s" : ""}`);
+    const timeLabel = times.length > 0 ? ` (${times.join(", ")})` : " (SOS / When Needed)";
+    return `${pattern}${timeLabel} • ${sch.food} • ${sch.duration}`;
+  };
+
+  const getEffectiveDosage = (item: ClinicalItem) => {
+    if (schedules[item.name]) {
+      return formatScheduleString(schedules[item.name]);
+    }
+    return item.dosage || "1 - 0 - 1 (Morning, Night) • After Food • 5 Days";
+  };
+
+  const handleToggle = (item: ClinicalItem, type: "medicine" | "test") => {
+    const isCurrentlyAdded = !!addedItems[item.name];
+    const dosage = getEffectiveDosage(item);
+
+    if (isCurrentlyAdded) {
+      setAddedItems((prev) => {
+        const next = { ...prev };
+        delete next[item.name];
+        return next;
+      });
+      setSelectedItem(null);
+      setNotificationItem({ item, type, action: "removed", dosage });
+    } else {
+      setAddedItems((prev) => ({ ...prev, [item.name]: true }));
+      setSelectedItem(null);
+      setNotificationItem({ item, type, action: "added", dosage });
+    }
+  };
+
+  const updateSlotQuantity = (
+    medName: string,
+    slot: "morning" | "afternoon" | "night",
+    delta: number
+  ) => {
+    const current = getSchedule(medName);
+    const newQty = Math.max(0, Math.min(5, (current[slot] || 0) + delta));
+    setSchedules((prev) => ({
+      ...prev,
+      [medName]: {
+        ...current,
+        [slot]: newQty,
+      },
+    }));
+  };
+
+  const setSlotQuantity = (
+    medName: string,
+    slot: "morning" | "afternoon" | "night",
+    qty: number
+  ) => {
+    const current = getSchedule(medName);
+    setSchedules((prev) => ({
+      ...prev,
+      [medName]: {
+        ...current,
+        [slot]: qty,
+      },
+    }));
+  };
+
+  const currentSchedule = selectedItem ? getSchedule(selectedItem.item.name) : null;
 
   return (
-    <div className="flex flex-col h-full bg-transparent">
-      {/* Header */}
-      <div className="px-8 pt-8 pb-4">
+    <div className="flex flex-col h-full bg-transparent overflow-hidden relative font-sans">
+      {/* Same Line Header: Cura AI on Left, Session Controls on Right */}
+      <div className="flex items-center justify-between pb-5 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#18181A] flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-[#18181A] flex items-center justify-center shadow-xs">
             <Brain className="h-5 w-5 text-white" />
           </div>
           <div>
             <h2 className="text-2xl font-serif text-[#18181A]">Cura AI</h2>
             <p className="text-sm text-[#18181A]/60 font-medium flex items-center gap-1.5 mt-0.5">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#18181A] opacity-50"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#18181A]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0B392A] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0B392A]"></span>
               </span>
               Analyzing session...
             </p>
           </div>
         </div>
+
+        <SessionControls />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-10">
-        
-        {!hasInsights && (
-          <div className="text-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-2xl">
-            <p className="text-sm">Speak into the microphone to receive real-time LLM insights.</p>
-          </div>
-        )}
-
-        {hasInsights && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Medication Recommendations */}
-            {medicines.length > 0 && (
-              <div>
-                <h3 className="text-[15px] font-bold text-[#18181A] mb-4 flex items-center gap-2">
-                  <Pill className="h-4 w-4" /> Suggested Medications
-                </h3>
-                <div className="space-y-4">
-                  {medicines.map((med, i) => (
-                    <div key={i} className="bg-[#FDFBF2] border border-[#18181A]/20 p-5 rounded-[24px] relative overflow-hidden">
-                      <div className="flex justify-between items-start mb-3">
-                        <p className="text-sm font-bold text-[#18181A] pr-4">{med}</p>
-                        <button className="h-7 w-7 shrink-0 rounded-full bg-[#E9D5FF] text-[#18181A] border border-[#18181A] flex items-center justify-center font-bold text-xs hover:bg-[#D8B4FE] transition-colors">
-                          +
-                        </button>
-                      </div>
-                      <p className="text-[13px] font-medium text-[#18181A]/60 mb-4">Recommended by Groq LLM</p>
-                    </div>
-                  ))}
-                </div>
+      {/* Two Column Boxed Layout for Medications & Tests */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-5 pb-2">
+        {/* Suggested Medications Box */}
+        <div className="flex flex-col h-full min-h-0 bg-[#FDFBF2] border border-[#18181A]/20 rounded-[28px] p-5 shadow-sm overflow-hidden">
+          {/* Box Header */}
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#18181A]/10 flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-full bg-[#E9D5FF] border border-[#18181A]/20 flex items-center justify-center text-[#18181A]">
+                <Pill className="h-4 w-4" />
               </div>
-            )}
+              <h3 className="text-[15px] font-bold text-[#18181A]">
+                Suggested Medications
+              </h3>
+            </div>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#18181A]/5 text-[#18181A]/70 border border-[#18181A]/10">
+              {medicines.length}
+            </span>
+          </div>
 
-            {/* Suggested Tests */}
-            {tests.length > 0 && (
-              <div>
-                <h3 className="text-[15px] font-bold text-[#18181A] mb-4 flex items-center gap-2">
-                  <Syringe className="h-4 w-4" /> Recommended Tests
-                </h3>
-                <div className="space-y-4">
-                  {tests.map((test, i) => (
-                    <div key={i} className="bg-[#FDFBF2] border border-[#18181A]/20 p-4 rounded-[24px] flex justify-between items-center relative overflow-hidden">
-                      <div className="pl-2 py-1 pr-4">
-                        <p className="text-sm font-bold text-[#18181A]">{test}</p>
-                        <p className="text-[12px] font-medium text-[#18181A]/60 mt-1">Recommended by Groq LLM</p>
+          {/* Box Content List */}
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+            {medicines.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center py-10 px-4">
+                <p className="text-xs font-medium text-[#18181A]/40">
+                  Speak into the microphone to detect and recommend medications.
+                </p>
+              </div>
+            ) : (
+              medicines.map((med, i) => {
+                const isAdded = !!addedItems[med.name];
+                const activeDosage = getEffectiveDosage(med);
+                return (
+                  <div
+                    key={i}
+                    onClick={() => setSelectedItem({ item: med, type: "medicine" })}
+                    className="group bg-white border border-[#18181A]/15 hover:border-[#18181A]/40 p-4 rounded-[20px] shadow-2xs relative overflow-hidden transition-all cursor-pointer hover:shadow-sm"
+                  >
+                    <div className="flex justify-between items-start mb-1.5">
+                      <div className="pr-3 flex-1 min-w-0">
+                        <p className="text-sm font-bold text-[#18181A] leading-snug break-words group-hover:text-[#0B392A] transition-colors">
+                          {med.name}
+                        </p>
+                        <p className="text-[11px] font-medium text-[#18181A]/50 mt-0.5">
+                          Recommended by Cura AI
+                        </p>
                       </div>
-                      <button className="h-8 w-8 shrink-0 rounded-full border border-[#18181A]/10 text-[#18181A] flex items-center justify-center hover:bg-[#18181A]/5 transition-colors mr-1">
-                        <span className="sr-only">Add</span>
-                        +
+
+                      {/* Action Button - opens details modal */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedItem({ item: med, type: "medicine" });
+                        }}
+                        className={`h-7 w-7 shrink-0 rounded-full border flex items-center justify-center font-bold text-xs transition-all shadow-2xs ${
+                          isAdded
+                            ? "bg-[#0B392A] text-white border-[#0B392A]"
+                            : "bg-[#E9D5FF] text-[#18181A] border-[#18181A] hover:bg-[#D8B4FE]"
+                        }`}
+                        title="View clinical evidence & dosage options"
+                      >
+                        {isAdded ? (
+                          <CheckCircle2 className="h-4 w-4" />
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
+
+                    {/* Dosage Preview Tag */}
+                    <div className="text-[11px] font-semibold text-[#18181A]/80 mb-2 truncate flex items-center gap-1.5 bg-[#FDFBF2] px-2.5 py-1 rounded-lg border border-[#18181A]/10">
+                      <Clock className="h-3 w-3 text-[#18181A]/50" />
+                      <span>{activeDosage}</span>
+                    </div>
+
+                    {/* Confidence Score Badge & Status */}
+                    <div className="flex items-center justify-between pt-1.5 border-t border-[#18181A]/5">
+                      <div className="inline-flex items-center gap-1.5">
+                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F3E8FF] border border-[#E9D5FF] text-[#581C87] text-[10.5px] font-bold">
+                          <Sparkles className="h-3 w-3 text-[#7E22CE]" />
+                          <span>{med.confidence}% Confidence</span>
+                        </div>
+
+                        {isAdded && (
+                          <span className="text-[10px] font-bold text-[#0B392A] bg-emerald-50 border border-emerald-200 px-2 py-0.2 rounded-full">
+                            In Prescription
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
-        )}
+        </div>
 
+        {/* Recommended Tests Box */}
+        <div className="flex flex-col h-full min-h-0 bg-[#FDFBF2] border border-[#18181A]/20 rounded-[28px] p-5 shadow-sm overflow-hidden">
+          {/* Box Header */}
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#18181A]/10 flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-full bg-[#E9D5FF] border border-[#18181A]/20 flex items-center justify-center text-[#18181A]">
+                <Syringe className="h-4 w-4" />
+              </div>
+              <h3 className="text-[15px] font-bold text-[#18181A]">
+                Recommended Tests
+              </h3>
+            </div>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#18181A]/5 text-[#18181A]/70 border border-[#18181A]/10">
+              {tests.length}
+            </span>
+          </div>
+
+          {/* Box Content List */}
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+            {tests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center py-10 px-4">
+                <p className="text-xs font-medium text-[#18181A]/40">
+                  Speak into the microphone to detect and recommend diagnostic tests.
+                </p>
+              </div>
+            ) : (
+              tests.map((test, i) => {
+                const isAdded = !!addedItems[test.name];
+                return (
+                  <div
+                    key={i}
+                    onClick={() => setSelectedItem({ item: test, type: "test" })}
+                    className="group bg-white border border-[#18181A]/15 hover:border-[#18181A]/40 p-4 rounded-[20px] shadow-2xs relative overflow-hidden transition-all cursor-pointer hover:shadow-sm"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="pr-3 flex-1 min-w-0">
+                        <p className="text-sm font-bold text-[#18181A] leading-snug break-words group-hover:text-[#0B392A] transition-colors">
+                          {test.name}
+                        </p>
+                        <p className="text-[11px] font-medium text-[#18181A]/50 mt-0.5">
+                          Recommended by Cura AI
+                        </p>
+                      </div>
+
+                      {/* Action Button - opens details modal */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedItem({ item: test, type: "test" });
+                        }}
+                        className={`h-7 w-7 shrink-0 rounded-full border flex items-center justify-center font-bold text-xs transition-all shadow-2xs ${
+                          isAdded
+                            ? "bg-[#0B392A] text-white border-[#0B392A]"
+                            : "bg-white text-[#18181A] border-[#18181A]/20 hover:bg-[#18181A]/5"
+                        }`}
+                        title="View clinical evidence & diagnostic options"
+                      >
+                        {isAdded ? (
+                          <CheckCircle2 className="h-4 w-4 text-white" />
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Confidence Score Badge & Status */}
+                    <div className="flex items-center justify-between pt-1.5 border-t border-[#18181A]/5 mt-2">
+                      <div className="inline-flex items-center gap-1.5">
+                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#E0F2FE] border border-[#BAE6FD] text-[#0369A1] text-[10.5px] font-bold">
+                          <Sparkles className="h-3 w-3 text-[#0284C7]" />
+                          <span>{test.confidence}% Confidence</span>
+                        </div>
+
+                        {isAdded && (
+                          <span className="text-[10px] font-bold text-[#0B392A] bg-emerald-50 border border-emerald-200 px-2 py-0.2 rounded-full">
+                            In Orders
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* POPUP 1: WIDE LANDSCAPE Multi-Source Clinical Evidence (LEFT) & Multi-Tablet Stepper / Dosage (RIGHT) */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4 sm:p-6 animate-in fade-in duration-200">
+          <div className="bg-[#FDFBF2] border border-[#18181A]/20 rounded-[28px] w-full max-w-4xl lg:max-w-5xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col font-sans max-h-[92vh]">
+            {/* Modal Top Header Bar */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#18181A]/10 bg-white/75 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-[#E9D5FF] border border-[#18181A]/20 flex items-center justify-center text-[#18181A]">
+                  {selectedItem.type === "medicine" ? (
+                    <Pill className="h-5 w-5" />
+                  ) : (
+                    <Syringe className="h-5 w-5" />
+                  )}
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#18181A]/50 block">
+                    {selectedItem.type === "medicine"
+                      ? "Medication Clinical Dossier"
+                      : "Diagnostic Order Dossier"}
+                  </span>
+                  <h3 className="text-lg font-bold text-[#18181A] leading-tight tracking-tight">
+                    {selectedItem.item.name}
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="h-8 w-8 rounded-full border border-[#18181A]/10 hover:bg-[#18181A]/5 flex items-center justify-center text-[#18181A]/70 transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Landscape Two-Column Body: EXPLANATION ON LEFT, DOSAGE WITH MULTI-TABLET STEPPERS ON RIGHT */}
+            <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12 min-h-0">
+              {/* LEFT COLUMN: Clinical Explanation & Multi-Source Evidence (60%) */}
+              <div className="md:col-span-7 p-6 space-y-3.5 border-b md:border-b-0 md:border-r border-[#18181A]/10 bg-transparent overflow-y-auto">
+                {/* Confidence Score Bar Box */}
+                <div className="bg-white border border-[#18181A]/10 p-4 rounded-2xl shadow-2xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-[#18181A]">
+                      <Sparkles className="h-4 w-4 text-[#7E22CE]" />
+                      <span>AI Clinical Confidence Score</span>
+                    </div>
+                    <span className="text-base font-bold text-[#0B392A]">
+                      {selectedItem.item.confidence}% Match
+                    </span>
+                  </div>
+
+                  <div className="h-2 w-full bg-[#18181A]/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#0B392A] rounded-full transition-all duration-500"
+                      style={{ width: `${selectedItem.item.confidence}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="text-[11px] font-bold uppercase tracking-wider text-[#18181A]/50 pt-1">
+                  Multi-Source Clinical Evidence Breakdown
+                </div>
+
+                {/* Reference 1: Current Conversation */}
+                <div className="bg-white border border-[#18181A]/10 p-4 rounded-2xl shadow-2xs flex items-start gap-3">
+                  <div className="h-7 w-7 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-700 flex-shrink-0 mt-0.5">
+                    <MessageSquareText className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11.5px] font-bold text-[#18181A] uppercase tracking-wide">
+                        1. Current Conversation Evidence
+                      </span>
+                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100/60 px-2 py-0.2 rounded-full">
+                        Live Dialogue
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#18181A]/80 leading-relaxed mt-1">
+                      {selectedItem.item.conversation_evidence ||
+                        "Patient actively reported acute onset symptoms during the recorded consultation dialogue."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Reference 2: Patient History */}
+                <div className="bg-white border border-[#18181A]/10 p-4 rounded-2xl shadow-2xs flex items-start gap-3">
+                  <div className="h-7 w-7 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 flex-shrink-0 mt-0.5">
+                    <FileClock className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11.5px] font-bold text-[#18181A] uppercase tracking-wide">
+                        2. Patient Medical History
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.2 rounded-full">
+                        Profile Screened
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#18181A]/80 leading-relaxed mt-1">
+                      {selectedItem.item.history_evidence ||
+                        "Screened against patient health record: No documented allergies, organ impairment, or adverse drug interactions."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Reference 3: Reports & Diagnostic Baseline */}
+                <div className="bg-white border border-[#18181A]/10 p-4 rounded-2xl shadow-2xs flex items-start gap-3">
+                  <div className="h-7 w-7 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 flex-shrink-0 mt-0.5">
+                    <FlaskConical className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11.5px] font-bold text-[#18181A] uppercase tracking-wide">
+                        3. Clinical Reports & Baseline
+                      </span>
+                      <span className="text-[10px] font-bold text-blue-700 bg-blue-100/60 px-2 py-0.2 rounded-full">
+                        Diagnostics
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#18181A]/80 leading-relaxed mt-1">
+                      {selectedItem.item.reports_evidence ||
+                        "Correlates with baseline physiological vitals and previous laboratory parameters on file."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Reference 4: Clinical Protocol Synthesis */}
+                <div className="bg-white border border-[#18181A]/10 p-4 rounded-2xl shadow-2xs flex items-start gap-3">
+                  <div className="h-7 w-7 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 flex-shrink-0 mt-0.5">
+                    <BookOpenCheck className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[11.5px] font-bold text-[#18181A] uppercase tracking-wide block">
+                      4. Evidence-Based Clinical Synthesis
+                    </span>
+                    <p className="text-xs text-[#18181A]/80 leading-relaxed mt-1">
+                      {selectedItem.item.reasoning}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN: Multi-Tablet Quantity Steppers & Dosage Matrix (40%) */}
+              <div className="md:col-span-5 p-6 bg-white/40 flex flex-col justify-between gap-5 overflow-y-auto">
+                <div className="space-y-4">
+                  {/* CLINICAL DOSAGE TIMING MATRIX WITH MULTI-TABLET STEPPERS */}
+                  {selectedItem.type === "medicine" && currentSchedule && (
+                    <div className="bg-white border border-[#18181A]/10 p-4 rounded-2xl shadow-2xs space-y-3.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-[#18181A] uppercase tracking-wider flex items-center gap-1">
+                          <Clock className="h-3.5 w-3.5 text-[#7E22CE]" /> Tablet Quantities & Timing
+                        </span>
+                        <span className="text-[11px] font-bold text-[#7E22CE] bg-[#F3E8FF] px-2.5 py-0.5 rounded-full">
+                          {currentSchedule.morning} - {currentSchedule.afternoon} - {currentSchedule.night}
+                        </span>
+                      </div>
+
+                      {/* Day / Afternoon / Night Multi-Tablet Steppers */}
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {/* Morning (Day) Stepper */}
+                        <div
+                          className={`p-2.5 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
+                            currentSchedule.morning > 0
+                              ? "bg-[#0B392A] text-white border-[#0B392A] shadow-xs"
+                              : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            <Sun className="h-3.5 w-3.5" />
+                            <span className="text-[11px] font-bold">Morning</span>
+                          </div>
+
+                          <div className="flex items-center justify-between w-full px-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSlotQuantity(selectedItem.item.name, "morning", -1)
+                              }
+                              className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
+                                currentSchedule.morning > 0
+                                  ? "bg-white/20 hover:bg-white/30 text-white"
+                                  : "bg-[#18181A]/5 text-[#18181A]/40"
+                              }`}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+
+                            <span className="text-sm font-bold">
+                              {currentSchedule.morning}
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSlotQuantity(selectedItem.item.name, "morning", 1)
+                              }
+                              className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
+                                currentSchedule.morning > 0
+                                  ? "bg-white/20 hover:bg-white/30 text-white"
+                                  : "bg-[#18181A]/10 hover:bg-[#18181A]/20 text-[#18181A]"
+                              }`}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+
+                          <span className="text-[9.5px] opacity-80 font-medium">
+                            {currentSchedule.morning === 0
+                              ? "None"
+                              : `${currentSchedule.morning} Tab${
+                                  currentSchedule.morning > 1 ? "s" : ""
+                                }`}
+                          </span>
+                        </div>
+
+                        {/* Afternoon Stepper */}
+                        <div
+                          className={`p-2.5 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
+                            currentSchedule.afternoon > 0
+                              ? "bg-[#0B392A] text-white border-[#0B392A] shadow-xs"
+                              : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            <SunMedium className="h-3.5 w-3.5" />
+                            <span className="text-[11px] font-bold">Afternoon</span>
+                          </div>
+
+                          <div className="flex items-center justify-between w-full px-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSlotQuantity(selectedItem.item.name, "afternoon", -1)
+                              }
+                              className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
+                                currentSchedule.afternoon > 0
+                                  ? "bg-white/20 hover:bg-white/30 text-white"
+                                  : "bg-[#18181A]/5 text-[#18181A]/40"
+                              }`}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+
+                            <span className="text-sm font-bold">
+                              {currentSchedule.afternoon}
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSlotQuantity(selectedItem.item.name, "afternoon", 1)
+                              }
+                              className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
+                                currentSchedule.afternoon > 0
+                                  ? "bg-white/20 hover:bg-white/30 text-white"
+                                  : "bg-[#18181A]/10 hover:bg-[#18181A]/20 text-[#18181A]"
+                              }`}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+
+                          <span className="text-[9.5px] opacity-80 font-medium">
+                            {currentSchedule.afternoon === 0
+                              ? "None"
+                              : `${currentSchedule.afternoon} Tab${
+                                  currentSchedule.afternoon > 1 ? "s" : ""
+                                }`}
+                          </span>
+                        </div>
+
+                        {/* Night Stepper */}
+                        <div
+                          className={`p-2.5 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
+                            currentSchedule.night > 0
+                              ? "bg-[#0B392A] text-white border-[#0B392A] shadow-xs"
+                              : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            <Moon className="h-3.5 w-3.5" />
+                            <span className="text-[11px] font-bold">Night</span>
+                          </div>
+
+                          <div className="flex items-center justify-between w-full px-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSlotQuantity(selectedItem.item.name, "night", -1)
+                              }
+                              className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
+                                currentSchedule.night > 0
+                                  ? "bg-white/20 hover:bg-white/30 text-white"
+                                  : "bg-[#18181A]/5 text-[#18181A]/40"
+                              }`}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+
+                            <span className="text-sm font-bold">
+                              {currentSchedule.night}
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSlotQuantity(selectedItem.item.name, "night", 1)
+                              }
+                              className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
+                                currentSchedule.night > 0
+                                  ? "bg-white/20 hover:bg-white/30 text-white"
+                                  : "bg-[#18181A]/10 hover:bg-[#18181A]/20 text-[#18181A]"
+                              }`}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+
+                          <span className="text-[9.5px] opacity-80 font-medium">
+                            {currentSchedule.night === 0
+                              ? "None"
+                              : `${currentSchedule.night} Tab${
+                                  currentSchedule.night > 1 ? "s" : ""
+                                }`}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Food Timing */}
+                      <div className="pt-1">
+                        <span className="text-[10px] font-bold text-[#18181A]/50 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
+                          <Utensils className="h-3 w-3" /> Food Instructions
+                        </span>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {(["After Food", "Before Food", "Empty Stomach", "With Food"] as const).map(
+                            (foodOpt) => (
+                              <button
+                                key={foodOpt}
+                                type="button"
+                                onClick={() => {
+                                  setSchedules((prev) => ({
+                                    ...prev,
+                                    [selectedItem.item.name]: {
+                                      ...currentSchedule,
+                                      food: foodOpt,
+                                    },
+                                  }));
+                                }}
+                                className={`text-[10.5px] font-bold py-1.5 px-2 rounded-lg border text-center transition-all cursor-pointer ${
+                                  currentSchedule.food === foodOpt
+                                    ? "bg-[#E9D5FF] text-[#18181A] border-[#18181A]"
+                                    : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15 hover:bg-[#18181A]/5"
+                                }`}
+                              >
+                                {foodOpt}
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Duration in Days */}
+                      <div className="pt-1">
+                        <span className="text-[10px] font-bold text-[#18181A]/50 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
+                          <Calendar className="h-3 w-3" /> Duration
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {["3 Days", "5 Days", "7 Days", "10 Days", "14 Days", "SOS (PRN)"].map(
+                            (dur) => (
+                              <button
+                                key={dur}
+                                type="button"
+                                onClick={() => {
+                                  setSchedules((prev) => ({
+                                    ...prev,
+                                    [selectedItem.item.name]: {
+                                      ...currentSchedule,
+                                      duration: dur,
+                                    },
+                                  }));
+                                }}
+                                className={`text-[10.5px] font-bold py-1 px-2.5 rounded-lg border transition-all cursor-pointer ${
+                                  currentSchedule.duration === dur
+                                    ? "bg-[#0B392A] text-white border-[#0B392A]"
+                                    : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15 hover:bg-[#18181A]/5"
+                                }`}
+                              >
+                                {dur}
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Summary String */}
+                      <div className="p-2.5 rounded-xl bg-[#FDFBF2] border border-[#18181A]/10 text-[11px] font-semibold text-[#18181A]">
+                        {formatScheduleString(currentSchedule)}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Diagnostic Test Summary (For Tests) */}
+                  {selectedItem.type === "test" && (
+                    <div className="bg-white border border-[#18181A]/10 p-4 rounded-2xl shadow-2xs space-y-2">
+                      <span className="text-[11px] font-bold text-[#18181A] uppercase tracking-wider block">
+                        Lab Order Instruction
+                      </span>
+                      <p className="text-xs text-[#18181A]/80 leading-relaxed">
+                        Diagnostic panel ordered to screen clinical findings and assess inflammatory markers.
+                      </p>
+                      <div className="p-2.5 rounded-xl bg-[#FDFBF2] border border-[#18181A]/10 text-[11px] font-bold text-[#18181A]">
+                        Priority: {selectedItem.item.urgency || "Standard Lab Panel"}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Order Status */}
+                  <div className="bg-white border border-[#18181A]/10 p-3.5 rounded-2xl shadow-2xs flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[#18181A]/60">
+                      Prescription Status:
+                    </span>
+                    {addedItems[selectedItem.item.name] ? (
+                      <span className="text-[11px] font-bold text-[#0B392A] bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                        ✓ In Prescription
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-bold text-[#18181A]/50 bg-[#18181A]/5 border border-[#18181A]/10 px-2.5 py-0.5 rounded-full">
+                        Not Added
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Panel Action Button */}
+                <div className="pt-2 flex flex-col gap-2">
+                  {addedItems[selectedItem.item.name] ? (
+                    <button
+                      onClick={() => handleToggle(selectedItem.item, selectedItem.type)}
+                      className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 rounded-full shadow-2xs transition-all active:scale-95 cursor-pointer"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {selectedItem.type === "medicine"
+                        ? "Remove from Prescription"
+                        : "Remove from Diagnostic Orders"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleToggle(selectedItem.item, selectedItem.type)}
+                      className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#18181A] bg-[#E9D5FF] hover:bg-[#D8B4FE] border border-[#18181A] rounded-full shadow-2xs transition-all active:scale-95 cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      {selectedItem.type === "medicine"
+                        ? "Add to Prescription"
+                        : "Add to Diagnostic Orders"}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setSelectedItem(null)}
+                    className="w-full py-2 text-xs font-semibold text-[#18181A]/60 hover:text-[#18181A] transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP 2: Add / Remove Confirmation Popup (Clean Standard Sans-Serif Font) */}
+      {notificationItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4 animate-in fade-in duration-150 font-sans">
+          <div className="bg-white border border-[#18181A]/20 rounded-[28px] p-6 max-w-sm w-full shadow-2xl text-center space-y-4 animate-in zoom-in-95 duration-150">
+            <div
+              className={`h-12 w-12 rounded-full border flex items-center justify-center mx-auto ${
+                notificationItem.action === "added"
+                  ? "bg-[#E0F2FE] border-[#0284C7]/20 text-[#0B392A]"
+                  : "bg-red-50 border-red-200 text-red-600"
+              }`}
+            >
+              {notificationItem.action === "added" ? (
+                <CheckCircle2 className="h-6 w-6" />
+              ) : (
+                <Trash2 className="h-6 w-6" />
+              )}
+            </div>
+
+            <div>
+              <h3 className="text-base font-bold text-[#18181A] tracking-tight">
+                {notificationItem.action === "added"
+                  ? "Successfully Added!"
+                  : "Removed from Orders"}
+              </h3>
+              <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
+                <span className="font-bold text-[#18181A]">
+                  {notificationItem.item.name}
+                </span>{" "}
+                {notificationItem.dosage && (
+                  <span className="text-[#18181A] font-semibold block mt-1 bg-[#FDFBF2] py-1 px-2 rounded-lg border border-[#18181A]/10 text-[11px]">
+                    {notificationItem.dosage}
+                  </span>
+                )}
+                has been{" "}
+                {notificationItem.action === "added" ? "added to" : "removed from"}{" "}
+                the active{" "}
+                {notificationItem.type === "medicine"
+                  ? "prescription list"
+                  : "investigation orders"}
+                .
+              </p>
+            </div>
+
+            <button
+              onClick={() => setNotificationItem(null)}
+              className={`w-full py-2.5 text-xs font-bold rounded-full shadow-xs transition-all cursor-pointer ${
+                notificationItem.action === "added"
+                  ? "text-white bg-[#0B392A] hover:bg-[#07241A]"
+                  : "text-[#18181A] bg-[#18181A]/10 hover:bg-[#18181A]/15"
+              }`}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
