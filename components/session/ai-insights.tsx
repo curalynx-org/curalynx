@@ -241,9 +241,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
     <div className="flex flex-col h-full bg-transparent overflow-hidden relative font-sans">
       {/* Same Line Header: Cura AI on Left, Session Controls on Right */}
       <div className="flex items-center justify-between pb-5 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#18181A] flex items-center justify-center shadow-xs">
-            <Brain className="h-5 w-5 text-white" />
+        <div className="flex items-center gap-3.5">
+          <div className="h-14 w-14 rounded-2xl bg-white border border-[#18181A]/15 p-1 flex items-center justify-center shadow-xs shrink-0">
+            <img src="/curalynx-logo.png" alt="Cura AI" className="h-full w-full object-contain scale-105" />
           </div>
           <div>
             <h2 className="text-2xl font-serif text-[#18181A]">Cura AI</h2>

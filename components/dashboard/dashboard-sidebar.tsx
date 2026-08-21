@@ -76,12 +76,12 @@ export function DashboardSidebar() {
       {/* Brand Header */}
       <div className="flex items-center justify-between px-5 py-5">
         <Link href="/" className="flex items-center gap-2.5 overflow-hidden">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#0B392A] text-white">
-            <HeartPulse className="size-5" />
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white border border-border/80 p-1 shadow-2xs">
+            <img src="/curalynx-logo.png" alt="CuraLynx" className="size-full object-contain" />
           </span>
           {!collapsed && (
             <span className="text-lg font-semibold tracking-tight text-foreground whitespace-nowrap">
-              Curalynx
+              CuraLynx
             </span>
           )}
         </Link>

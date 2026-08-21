@@ -6,8 +6,13 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
 
 export const metadata: Metadata = {
-  title: "Curalynx | Care that moves with you",
+  title: "CuraLynx | Care that moves with you",
   description: "Thoughtful health guidance for everyday wellbeing.",
+  icons: {
+    icon: "/curalynx-logo.png",
+    shortcut: "/curalynx-logo.png",
+    apple: "/curalynx-logo.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

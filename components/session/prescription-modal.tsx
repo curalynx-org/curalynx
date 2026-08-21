@@ -316,16 +316,13 @@ Follow Up: ${followUpStr}
               </p>
             </div>
 
-            {/* Caduceus / Medical Emblem (Center) */}
-            <div className="w-[20%] flex justify-center items-center pt-1">
-              <svg
-                viewBox="0 0 100 100"
-                className="w-16 h-16 text-blue-900 drop-shadow-xs"
-                fill="currentColor"
-              >
-                {/* Caduceus Rod and Serpents Vector */}
-                <path d="M50 5 C52 5 53 7 53 9 L53 14 C58 12 66 10 75 14 C70 18 64 22 53 23 L53 30 C62 28 72 32 75 42 C68 40 60 42 53 48 L53 58 C62 55 70 60 72 68 C66 67 59 70 53 77 L53 90 C53 93 47 93 47 90 L47 77 C41 70 34 67 28 68 C30 60 38 55 47 58 L47 48 C40 42 32 40 25 42 C28 32 38 28 47 30 L47 23 C36 22 30 18 25 14 C34 10 42 12 47 14 L47 9 C47 7 48 5 50 5 Z M50 2 C54 2 56 5 56 8 C56 11 54 13 50 13 C46 13 44 11 44 8 C44 5 46 2 50 2 Z" />
-              </svg>
+            {/* Brand Logo / Medical Emblem (Center) */}
+            <div className="w-[20%] flex justify-center items-center pt-0.5">
+              <img
+                src="/curalynx-logo.png"
+                alt="CuraLynx Emblem"
+                className="w-20 h-20 object-contain scale-110"
+              />
             </div>
 
             {/* Hospital / Clinic Details (Right) */}
@@ -505,8 +502,36 @@ Follow Up: ${followUpStr}
             Follow Up: {followUpStr}
           </div>
 
-          {/* 9. FOOTER DISCLAIMER */}
-          <div className="pt-10 pb-4 text-center text-[11px] font-medium text-black">
+          {/* 9. DOCTOR'S SIGNATURE BLOCK & PHYSICAL SIGN DISCLAIMER */}
+          <div className="pt-8 pb-3 flex justify-between items-end border-t border-black/20 mt-6">
+            <div className="text-left max-w-[55%] pb-1">
+              <p className="text-red-600 font-bold text-[11px] uppercase tracking-wide leading-relaxed">
+                * THIS COMPUTER-GENERATED PRESCRIPTION IS VALID ONLY AFTER THE DOCTOR&apos;S PHYSICAL SIGNATURE AND CLINIC STAMP.
+              </p>
+            </div>
+
+            <div className="text-right pl-4">
+              <div className="font-serif italic font-bold text-lg text-black pr-2 select-none">
+                {doctorInfo.name}
+              </div>
+              <div className="w-48 h-0.5 bg-black ml-auto my-1" />
+              <p className="text-xs font-bold text-black uppercase">
+                {doctorInfo.name}
+              </p>
+              <p className="text-[11px] font-medium text-black">
+                {doctorInfo.qualifications}
+              </p>
+              <p className="text-[10.5px] font-mono text-black/70">
+                Reg. No: {doctorInfo.regNo}
+              </p>
+              <p className="text-[10px] font-semibold text-black/50 uppercase tracking-wider mt-0.5">
+                (Authorized Medical Practitioner)
+              </p>
+            </div>
+          </div>
+
+          {/* 10. FOOTER NOTE */}
+          <div className="pt-4 pb-2 text-center text-[11px] font-medium text-black/80">
             Substitute with equivalent Generics as required.
           </div>
         </div>
