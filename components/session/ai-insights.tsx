@@ -24,6 +24,7 @@ import {
   SkipForward,
   AlertTriangle,
   Search,
+  Activity,
 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -78,7 +79,7 @@ export interface MedicationSchedule {
   morning: number;
   afternoon: number;
   night: number;
-  food: "After Food" | "Before Food" | "Empty Stomach" | "With Food";
+  food: "After Food" | "Before Food" | "With Food" | "Empty Stomach";
   duration: string;
 }
 
@@ -96,19 +97,19 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
     if (typeof m === "string") {
       return {
         name: m,
-        dosage: "1 - 0 - 1 (Morning & Night) • After Food • 5 Days",
-        category: "Therapeutic Medication",
-        confidence: 96,
-        conversation_evidence: "Patient reported active symptoms during live consultation dialogue.",
-        history_evidence: "No documented drug allergy or contraindications in medical history profile.",
-        reports_evidence: "Baseline vitals and previous diagnostic history indicate standard first-line eligibility.",
-        reasoning: `Indicated for symptom management. Clinical guidelines recommend early initiation of ${m}.`,
+        dosage: "1 - 0 - 1 (Morning, Night) • After Food • 5 Days",
+        category: "Pharmacotherapy",
+        confidence: 95,
+        conversation_evidence: "Patient reported active symptoms during the live consultation dialogue.",
+        history_evidence: "No contraindications, adverse reactions, or drug-drug interactions in patient history.",
+        reports_evidence: "Correlates with baseline laboratory parameters and vital signs tracking.",
+        reasoning: `Recommended for symptom relief and clinical management based on patient presentation.`,
       };
     }
     return {
       name: m.name,
-      dosage: m.dosage || "1 - 0 - 1 (Morning & Night) • After Food • 5 Days",
-      category: m.category || "Therapeutic Medication",
+      dosage: m.dosage || "1 - 0 - 1 (Morning, Night) • After Food • 5 Days",
+      category: m.category || "Pharmacotherapy",
       confidence: m.confidence || 95,
       conversation_evidence:
         m.conversation_evidence ||
@@ -164,6 +165,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   } | null>(null);
 
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [prescriptionDocMode, setPrescriptionDocMode] = useState<"rx" | "lab_order">("rx");
   const [showPreGenerationConfirmation, setShowPreGenerationConfirmation] = useState(false);
   const [showEndSessionModal, setShowEndSessionModal] = useState(false);
   const [showSkipPatientModal, setShowSkipPatientModal] = useState(false);
@@ -1326,10 +1328,23 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                   </div>
                 </div>
               )}
+
+              {/* Clinical Protocol Notice if Tests are Ordered */}
+              {allTests.filter((t) => addedItems[t.name]).length > 0 && (
+                <div className="p-4 rounded-2xl bg-sky-50/90 border border-sky-200 text-xs text-sky-950 space-y-1.5 shadow-2xs">
+                  <div className="font-bold flex items-center gap-1.5 text-sky-900 text-[12.5px]">
+                    <FlaskConical className="h-4 w-4 text-sky-700" />
+                    <span>Recommended Clinical Protocol: Diagnostic Tests First</span>
+                  </div>
+                  <p className="text-[11.5px] leading-relaxed text-sky-900/90">
+                    Diagnostic investigations (<strong>{allTests.filter((t) => addedItems[t.name]).length} test(s)</strong>) have been ordered. The standard clinical protocol is for the patient to proceed to the diagnostic laboratory with an official <strong>Lab Requisition Slip</strong> first before definitive medication therapy is prescribed.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Modal Actions Footer */}
-            <div className="px-6 py-4 border-t border-[#18181A]/10 bg-white flex items-center justify-between flex-shrink-0">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-t border-[#18181A]/10 bg-white flex-shrink-0">
               <button
                 onClick={() => setShowPreGenerationConfirmation(false)}
                 className="px-4 py-2 text-xs font-bold text-[#18181A]/70 hover:text-[#18181A] transition-colors cursor-pointer"
@@ -1337,15 +1352,32 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 ← Back / Add More Items
               </button>
 
-              <button
-                onClick={() => {
-                  setShowPreGenerationConfirmation(false);
-                  setShowPrescriptionModal(true);
-                }}
-                className="flex items-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-[#0B392A] hover:bg-[#07241A] rounded-full shadow-sm transition-all cursor-pointer active:scale-95"
-              >
-                <span>Proceed to Prescription Preview →</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2.5">
+                {allTests.filter((t) => addedItems[t.name]).length > 0 && (
+                  <button
+                    onClick={() => {
+                      setShowPreGenerationConfirmation(false);
+                      setPrescriptionDocMode("lab_order");
+                      setShowPrescriptionModal(true);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[#0284C7] hover:bg-[#0369A1] rounded-full shadow-sm transition-all cursor-pointer active:scale-95"
+                  >
+                    <Activity className="h-3.5 w-3.5" />
+                    <span>Print Lab Requisition (Patient Goes to Lab First)</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    setShowPreGenerationConfirmation(false);
+                    setPrescriptionDocMode("rx");
+                    setShowPrescriptionModal(true);
+                  }}
+                  className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white bg-[#0B392A] hover:bg-[#07241A] rounded-full shadow-sm transition-all cursor-pointer active:scale-95"
+                >
+                  <span>Proceed to Full Prescription Preview →</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1360,6 +1392,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
         tests={allTests}
         addedItems={addedItems}
         schedules={schedules}
+        initialDocMode={prescriptionDocMode}
       />
 
       {/* POPUP 4: End Session Confirmation Modal */}

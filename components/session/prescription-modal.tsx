@@ -11,6 +11,8 @@ import {
   Sparkles,
   Activity,
   Download,
+  Send,
+  Check,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ClinicalItem, MedicationSchedule } from "@/components/session/ai-insights";
@@ -23,6 +25,7 @@ interface PrescriptionModalProps {
   tests: ClinicalItem[];
   addedItems: Record<string, boolean>;
   schedules: Record<string, MedicationSchedule>;
+  initialDocMode?: "rx" | "lab_order";
 }
 
 export function PrescriptionModal({
@@ -33,8 +36,18 @@ export function PrescriptionModal({
   tests,
   addedItems,
   schedules,
+  initialDocMode = "rx",
 }: PrescriptionModalProps) {
+  const [docMode, setDocMode] = useState<"rx" | "lab_order">(initialDocMode);
   const [isCopied, setIsCopied] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  useEffect(() => {
+    if (initialDocMode) {
+      setDocMode(initialDocMode);
+    }
+  }, [initialDocMode, isOpen]);
   const [doctorInfo, setDoctorInfo] = useState<{
     name: string;
     qualifications: string;
@@ -127,7 +140,56 @@ export function PrescriptionModal({
     year: "numeric",
   }).replace(/ /g, "-");
 
+  const sendEmailNotification = async () => {
+    try {
+      setIsSendingEmail(true);
+      setEmailStatus("sending");
+      const res = await fetch("/api/prescription/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientId,
+          patientName: patientInfo.name,
+          patientGender: patientInfo.gender,
+          patientAge: patientInfo.age,
+          patientMobile: patientInfo.mobile,
+          patientAddress: patientInfo.address,
+          patientWeight: patientInfo.weight,
+          patientHeight: patientInfo.height,
+          patientBmi: patientInfo.bmi,
+          patientBp: patientInfo.bp,
+          patientEmail: "abhay.24305@knit.ac.in",
+          doctorName: doctorInfo.name,
+          doctorQual: doctorInfo.qualifications,
+          doctorReg: doctorInfo.regNo,
+          dateStr,
+          medicines: activeMedicines,
+          tests: activeTests,
+          schedules,
+          docMode,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEmailStatus("sent");
+        setTimeout(() => setEmailStatus("idle"), 4000);
+      } else {
+        setEmailStatus("error");
+        setTimeout(() => setEmailStatus("idle"), 4000);
+      }
+    } catch (err) {
+      console.error("Email send error:", err);
+      setEmailStatus("error");
+      setTimeout(() => setEmailStatus("idle"), 4000);
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   const handlePrint = () => {
+    // Automatically trigger background email sending to patient
+    sendEmailNotification();
+
     const printDocElement = document.getElementById("hospital-prescription-document");
     if (!printDocElement) return;
 
@@ -252,29 +314,79 @@ Follow Up: ${followUpStr}
       {/* Outer Modal Container */}
       <div className="bg-[#FDFBF2] border border-[#18181A]/20 rounded-[32px] w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[95vh]">
         {/* Modal Action Controls Header */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#18181A]/10 bg-white flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-[#0B392A] text-white flex items-center justify-center">
-              <FileText className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#18181A]">
-                Official Hospital Prescription Letterhead
-              </h3>
-              <p className="text-[11px] text-[#18181A]/60 font-medium">
-                Standard Clinical Rx Format
-              </p>
+        <div className="flex flex-wrap items-center justify-between px-6 py-3 border-b border-[#18181A]/10 bg-white flex-shrink-0 gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-[#FDFBF2] p-1 rounded-2xl border border-[#18181A]/10">
+              <button
+                onClick={() => setDocMode("rx")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  docMode === "rx"
+                    ? "bg-[#0B392A] text-white shadow-2xs"
+                    : "text-[#18181A]/70 hover:text-[#18181A]"
+                }`}
+              >
+                <FileText className="h-3.5 w-3.5" />
+                <span>Hospital Rx Letterhead</span>
+              </button>
+
+              <button
+                onClick={() => setDocMode("lab_order")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  docMode === "lab_order"
+                    ? "bg-[#0284C7] text-white shadow-2xs"
+                    : "text-[#18181A]/70 hover:text-[#18181A]"
+                }`}
+              >
+                <Activity className="h-3.5 w-3.5" />
+                <span>Diagnostic Lab Requisition</span>
+                {activeTests.length > 0 && (
+                  <span className="ml-1 px-1.5 py-0.2 text-[10px] rounded-full bg-white/20">
+                    {activeTests.length}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Email to Patient Button */}
+            <button
+              onClick={sendEmailNotification}
+              disabled={isSendingEmail}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-full transition-all cursor-pointer shadow-2xs ${
+                emailStatus === "sent"
+                  ? "bg-emerald-600 text-white"
+                  : emailStatus === "sending"
+                  ? "bg-amber-100 text-amber-900 border border-amber-300 animate-pulse"
+                  : "bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100"
+              }`}
+              title="Email prescription directly to abhay.24305@knit.ac.in via Amazon SES"
+            >
+              {emailStatus === "sent" ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  <span>Emailed!</span>
+                </>
+              ) : emailStatus === "sending" ? (
+                <>
+                  <Send className="h-3.5 w-3.5 animate-spin" />
+                  <span>Sending...</span>
+                </>
+              ) : (
+                <>
+                  <Mail className="h-3.5 w-3.5 text-blue-900" />
+                  <span>Email Patient</span>
+                </>
+              )}
+            </button>
+
             {/* Copy Summary */}
             <button
               onClick={handleCopyText}
               className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-[#18181A] bg-white border border-[#18181A]/20 rounded-full hover:bg-[#18181A]/5 transition-all cursor-pointer shadow-2xs"
             >
               <Share2 className="h-3.5 w-3.5 text-[#18181A]/60" />
-              {isCopied ? "Copied Rx!" : "Share / Copy"}
+              {isCopied ? "Copied!" : "Share / Copy"}
             </button>
 
             {/* Print / Save PDF Button */}
@@ -283,7 +395,7 @@ Follow Up: ${followUpStr}
               className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-[#0B392A] hover:bg-[#07241A] rounded-full transition-all cursor-pointer shadow-xs active:scale-95"
             >
               <Printer className="h-3.5 w-3.5" />
-              Print / Save PDF
+              {docMode === "lab_order" ? "Print Lab Requisition PDF" : "Print Prescription PDF"}
             </button>
 
             {/* Close Button */}
@@ -296,7 +408,7 @@ Follow Up: ${followUpStr}
           </div>
         </div>
 
-        {/* PRINTABLE HOSPITAL RX DOCUMENT (Exact Layout as in Reference Image) */}
+        {/* PRINTABLE DOCUMENT (Either Full Hospital Prescription OR Diagnostic Requisition Slip) */}
         <div
           id="hospital-prescription-document"
           className="flex-1 overflow-y-auto p-8 sm:p-12 bg-white font-sans text-black select-text"
@@ -328,31 +440,41 @@ Follow Up: ${followUpStr}
             {/* Hospital / Clinic Details (Right) */}
             <div className="w-[42%] text-left pl-4">
               <h3 className="text-lg font-bold text-blue-900 tracking-tight">
-                CuraLynx Hospital
+                {docMode === "lab_order" ? "CuraLynx Diagnostic Laboratories" : "CuraLynx Hospital"}
               </h3>
               <p className="text-[11.5px] text-black font-medium leading-tight mt-0.5">
                 B/503 Medical Arts Complex, Sector 44, Bengaluru - 560038.
               </p>
               <p className="text-[11px] text-black font-medium leading-tight mt-0.5">
-                Ph: +91 98450 12849, Timing: 09:00 AM - 01:00 PM, 06:00 PM - 08:00 PM | Closed: Sunday
+                Ph: +91 98450 12849, Timing: 08:00 AM - 08:00 PM | Central Diagnostic Wing
               </p>
             </div>
           </div>
 
-          {/* 2. DATE ROW & PATIENT METADATA */}
+          {/* 2. DATE ROW & PATIENT METADATA (CLEAN CLINICAL ROW) */}
           <div className="pt-3 pb-3">
             <div className="text-right font-bold text-sm text-black mb-1">
               Date: {dateStr}
             </div>
 
-            <div className="space-y-1 text-xs font-bold text-black">
-              <div className="flex flex-wrap items-center justify-between">
-                <span>
-                  ID: {patientId.slice(0, 8).toUpperCase()} - {patientInfo.name.toUpperCase()} ({patientInfo.gender}) / {patientInfo.age} Y
-                </span>
-                <span>
+            <div className="space-y-1.5 text-xs font-bold text-black">
+              {/* Prominent, Bigger & Bolder Patient Name */}
+              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-black/15 pb-1">
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <span className="text-xs font-mono font-bold text-black/60">
+                    ID: {patientId.slice(0, 8).toUpperCase()} —
+                  </span>
+                  <span className="text-lg font-black text-black tracking-wide uppercase">
+                    {patientInfo.name}
+                  </span>
+                  <span className="text-sm font-bold text-black">
+                    ({patientInfo.gender}) / {patientInfo.age} Y
+                  </span>
+                </div>
+
+                <div className="text-xs font-bold text-black font-mono">
                   Mob. No.: {patientInfo.mobile}
-                </span>
+                </div>
               </div>
 
               <div>
@@ -360,16 +482,16 @@ Follow Up: ${followUpStr}
               </div>
 
               <div className="pt-0.5">
-                Weight (Kg): {patientInfo.weight}, Height (Cm): {patientInfo.height} (B.M.I. = {patientInfo.bmi}), BP: {patientInfo.bp}
+                Weight (Kg): {patientInfo.weight}, Height (Cm): {patientInfo.height} (B.M.I. = {patientInfo.bmi}), BP: {patientInfo.bp || "120/80 mmHg"}
               </div>
             </div>
           </div>
 
-          {/* 3. CHIEF COMPLAINTS & CLINICAL FINDINGS (Two Columns with Top/Bottom Borders) */}
+          {/* 3. CHIEF COMPLAINTS & CLINICAL FINDINGS (Two Columns with Top/Bottom Horizontal Lines) */}
           <div className="border-t border-b border-black py-2.5 my-3 grid grid-cols-2 gap-6 text-xs">
             <div>
               <h4 className="font-bold text-black underline mb-1">
-                Chief Complaints
+                Chief Complaints:
               </h4>
               <ul className="space-y-0.5 text-black font-semibold uppercase">
                 <li>* SNEEZING & RUNNY NOSE (3 DAYS)</li>
@@ -379,7 +501,7 @@ Follow Up: ${followUpStr}
 
             <div>
               <h4 className="font-bold text-black underline mb-1">
-                Clinical Findings
+                Clinical Findings:
               </h4>
               <ul className="space-y-0.5 text-black font-semibold uppercase">
                 <li>* BILATERAL TURBINATE CONGESTION</li>
@@ -398,83 +520,128 @@ Follow Up: ${followUpStr}
             </p>
           </div>
 
-          {/* 5. ℞ / R SYMBOL & MEDICATIONS TABLE */}
-          <div className="my-4">
-            <div className="font-serif font-bold text-xl text-black mb-1">
-              R
-            </div>
+          {/* 5. DOCUMENT MAIN SECTION: Rx OR LAB REQUISITION */}
+          {docMode === "lab_order" ? (
+            <div className="my-4">
+              <div className="font-bold text-sm text-black mb-1.5 uppercase">
+                Diagnostic Investigations Requisition (Proceed to Lab First)
+              </div>
 
-            {/* Table Header */}
-            <div className="border-t border-b border-black py-1.5 grid grid-cols-12 text-xs font-bold text-black">
-              <div className="col-span-6 pl-1">Medicine Name</div>
-              <div className="col-span-3 text-left">Dosage</div>
-              <div className="col-span-3 text-left">Duration</div>
-            </div>
+              {/* Header Line */}
+              <div className="border-t border-b border-black py-1.5 grid grid-cols-12 text-xs font-bold text-black">
+                <div className="col-span-6 pl-1">Investigation Name</div>
+                <div className="col-span-3 text-left">Department</div>
+                <div className="col-span-3 text-left">Priority</div>
+              </div>
 
-            {/* Medication Rows */}
-            <div className="divide-y divide-black/80">
-              {activeMedicines.length > 0 ? (
-                activeMedicines.map((med, idx) => {
-                  const sch = schedules[med.name] || {
-                    morning: 1,
-                    afternoon: 0,
-                    night: 1,
-                    food: "After Food",
-                    duration: "5 Days",
-                  };
-
-                  const dosageParts = [];
-                  if (sch.morning > 0) dosageParts.push(`${sch.morning} Morning`);
-                  if (sch.afternoon > 0) dosageParts.push(`${sch.afternoon} Afternoon`);
-                  if (sch.night > 0) dosageParts.push(`${sch.night} Night`);
-
-                  const totalTabs = calculateTotalTabs(sch);
-
-                  // Extract generic composition
-                  const genericName = med.category?.toUpperCase() || "ORAL THERAPEUTIC FORMULATION";
-
-                  return (
+              {/* Rows */}
+              <div className="divide-y divide-black/80">
+                {activeTests.length > 0 ? (
+                  activeTests.map((t, idx) => (
                     <div key={idx} className="py-2.5 grid grid-cols-12 text-xs text-black">
-                      {/* Medicine Name & Generic Formula */}
-                      <div className="col-span-6 pl-1 pr-2">
-                        <div className="font-bold uppercase">
-                          {idx + 1}) {med.name.toUpperCase()}
-                        </div>
-                        <div className="text-[10px] font-semibold text-black/80 uppercase tracking-tight mt-0.5">
-                          {genericName}
-                        </div>
+                      <div className="col-span-6 pl-1 pr-2 font-bold uppercase">
+                        {idx + 1}) {t.name.toUpperCase()}
                       </div>
-
-                      {/* Dosage */}
-                      <div className="col-span-3 font-semibold">
-                        <div>{dosageParts.join(", ") || "1 Morning, 1 Night"}</div>
-                        <div className="text-[10.5px] font-normal text-black/80">({sch.food})</div>
+                      <div className="col-span-3 font-semibold uppercase">
+                        {t.category || "Clinical Pathology"}
                       </div>
-
-                      {/* Duration */}
-                      <div className="col-span-3 font-semibold">
-                        <div>{sch.duration}</div>
-                        <div className="text-[10.5px] font-normal text-black/80">
-                          (Tot: {totalTabs} {med.name.toLowerCase().includes("cap") ? "Cap" : "Tab"})
-                        </div>
+                      <div className="col-span-3 font-bold text-blue-900 uppercase">
+                        {t.urgency || "ROUTINE"}
                       </div>
                     </div>
-                  );
-                })
-              ) : (
-                <div className="py-4 text-center text-xs text-black/60 italic">
-                  No medications selected in consultation.
-                </div>
-              )}
-            </div>
-            <div className="border-b border-black mt-1" />
-          </div>
+                  ))
+                ) : (
+                  <div className="py-4 text-center text-xs text-black/60 italic">
+                    No investigations selected in consultation.
+                  </div>
+                )}
+              </div>
+              <div className="border-b border-black mt-1" />
 
-          {/* 6. INVESTIGATIONS ORDERED (if any) */}
-          {activeTests.length > 0 && (
+              {/* Patient Sequential Instructions */}
+              <div className="my-4 p-3.5 border border-black rounded-lg bg-slate-50 text-xs text-black space-y-1">
+                <p className="font-bold uppercase text-black">PATIENT INSTRUCTIONS & WORKFLOW:</p>
+                <p>1. Please take this requisition slip directly to the <strong>Central Diagnostic / Pathology Center (Ground Floor)</strong>.</p>
+                <p>2. Complete blood/sample collections or imaging scans as requested above.</p>
+                <p>3. Once verified reports are collected, return to Dr. Vivek Vardhan for definitive prescription and treatment finalization.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="my-4">
+              <div className="font-serif font-bold text-xl text-black mb-1">
+                R
+              </div>
+
+              {/* Table Header */}
+              <div className="border-t border-b border-black py-1.5 grid grid-cols-12 text-xs font-bold text-black">
+                <div className="col-span-6 pl-1">Medicine Name</div>
+                <div className="col-span-3 text-left">Dosage</div>
+                <div className="col-span-3 text-left">Duration</div>
+              </div>
+
+              {/* Medication Rows */}
+              <div className="divide-y divide-black/80">
+                {activeMedicines.length > 0 ? (
+                  activeMedicines.map((med, idx) => {
+                    const sch = schedules[med.name] || {
+                      morning: 1,
+                      afternoon: 0,
+                      night: 1,
+                      food: "After Food",
+                      duration: "5 Days",
+                    };
+
+                    const dosageParts = [];
+                    if (sch.morning > 0) dosageParts.push(`${sch.morning} Morning`);
+                    if (sch.afternoon > 0) dosageParts.push(`${sch.afternoon} Afternoon`);
+                    if (sch.night > 0) dosageParts.push(`${sch.night} Night`);
+
+                    const totalTabs = calculateTotalTabs(sch);
+                    const genericName = med.category?.toUpperCase() || "ORAL THERAPEUTIC FORMULATION";
+
+                    return (
+                      <div key={idx} className="py-2.5 grid grid-cols-12 text-xs text-black">
+                        {/* Medicine Name & Generic Formula */}
+                        <div className="col-span-6 pl-1 pr-2">
+                          <div className="font-bold uppercase">
+                            {idx + 1}) {med.name.toUpperCase()}
+                          </div>
+                          <div className="text-[10px] font-semibold text-black/80 uppercase tracking-tight mt-0.5">
+                            {genericName}
+                          </div>
+                        </div>
+
+                        {/* Dosage */}
+                        <div className="col-span-3 font-semibold">
+                          <div>{dosageParts.join(", ") || "1 Morning, 1 Night"}</div>
+                          <div className="text-[10.5px] font-normal text-black/80">({sch.food})</div>
+                        </div>
+
+                        {/* Duration & Total Qty */}
+                        <div className="col-span-3 font-semibold">
+                          <div>{sch.duration || "5 Days"}</div>
+                          <div className="text-[10.5px] font-normal text-black/80">
+                            (Total: {totalTabs} Tab{totalTabs > 1 ? "s" : ""})
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="py-4 text-center text-xs text-black/60 italic">
+                    No medications selected in consultation.
+                  </div>
+                )}
+              </div>
+              <div className="border-b border-black mt-1" />
+            </div>
+          )}
+
+          {/* 6. INVESTIGATIONS ORDERED (in Rx mode) */}
+          {docMode === "rx" && activeTests.length > 0 && (
             <div className="my-4 text-xs">
               <h4 className="font-bold text-black">
-                Investigations:
+                Investigations Ordered (Get Done at Lab):
               </h4>
               <ul className="space-y-0.5 text-black font-semibold uppercase mt-0.5">
                 {activeTests.map((t, idx) => (
@@ -537,12 +704,33 @@ Follow Up: ${followUpStr}
         </div>
 
         {/* Modal Bottom Controls */}
-        <div className="px-6 py-4 border-t border-[#18181A]/10 bg-white flex items-center justify-between flex-shrink-0">
-          <span className="text-xs text-[#18181A]/60 font-medium">
-            {activeMedicines.length} Medication(s) Prescribed • Ready for Official Print / PDF
-          </span>
+        <div className="px-6 py-4 border-t border-[#18181A]/10 bg-white flex flex-wrap items-center justify-between flex-shrink-0 gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#18181A]/60 font-medium">
+              {activeMedicines.length} Medication(s) • Recipient: <span className="font-mono font-bold text-black/80">abhay.24305@knit.ac.in</span>
+            </span>
+            {emailStatus === "sent" && (
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                ✓ Prescription Emailed
+              </span>
+            )}
+            {emailStatus === "sending" && (
+              <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 animate-pulse">
+                📧 Sending via Amazon SES...
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={sendEmailNotification}
+              disabled={isSendingEmail}
+              className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-all cursor-pointer"
+            >
+              <Mail className="h-4 w-4" />
+              <span>{isSendingEmail ? "Sending..." : "Email to Patient"}</span>
+            </button>
+
             <button
               onClick={onClose}
               className="px-4 py-2 text-xs font-bold text-[#18181A]/70 hover:text-[#18181A] transition-colors cursor-pointer"
@@ -555,7 +743,7 @@ Follow Up: ${followUpStr}
               className="flex items-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-[#0B392A] hover:bg-[#07241A] rounded-full shadow-sm transition-all cursor-pointer active:scale-95"
             >
               <Printer className="h-4 w-4" />
-              Print / Save PDF Prescription
+              Print / Save PDF & Email
             </button>
           </div>
         </div>
