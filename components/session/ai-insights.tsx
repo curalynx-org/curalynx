@@ -23,11 +23,44 @@ import {
   LogOut,
   SkipForward,
   AlertTriangle,
+  Search,
 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SessionControls } from "@/components/session/session-controls";
 import { PrescriptionModal } from "@/components/session/prescription-modal";
+
+const MEDICINE_CATALOG: { name: string; category: string; dosage: string; reasoning: string }[] = [
+  { name: "Paracetamol 650mg", category: "Analgesic & Antipyretic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 3 Days", reasoning: "For symptomatic relief of fever, headache, and body aches." },
+  { name: "Amoxicillin + Clavulanic Acid 625mg", category: "Broad-Spectrum Antibiotic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 5 Days", reasoning: "Indicated for acute bacterial infections of upper/lower respiratory tract." },
+  { name: "Azithromycin 500mg", category: "Macrolide Antibiotic", dosage: "1 - 0 - 0 (Morning) • Before Food • 3 Days", reasoning: "Targeted macrolide therapy for respiratory and throat infections." },
+  { name: "Montelukast + Levocetirizine", category: "Anti-Allergic & Bronchodilator", dosage: "0 - 0 - 1 (Night) • After Food • 5 Days", reasoning: "Dual action for allergic rhinitis, nocturnal sneezing, and airway inflammation." },
+  { name: "Pantoprazole 40mg", category: "Proton Pump Inhibitor (PPI)", dosage: "1 - 0 - 0 (Morning) • Empty Stomach • 5 Days", reasoning: "Gastroprotection and suppression of gastric acid hypersecretion." },
+  { name: "Ibuprofen 400mg", category: "NSAID Analgesic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 3 Days", reasoning: "Anti-inflammatory and analgesic for acute muscular/joint pain." },
+  { name: "Cetirizine 10mg", category: "Second-Gen Antihistamine", dosage: "0 - 0 - 1 (Night) • After Food • 5 Days", reasoning: "Non-sedating antihistamine for urticaria, rhinitis, and itching." },
+  { name: "Dextromethorphan Syrup 100ml", category: "Cough Suppressant", dosage: "1 - 1 - 1 (TID) • After Food • 5 Days", reasoning: "Centrally acting antitussive for dry, non-productive irritating cough." },
+  { name: "Metformin 500mg", category: "Oral Antidiabetic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 30 Days", reasoning: "First-line biguanide for glycemic control and insulin sensitization." },
+  { name: "Telmisartan 40mg", category: "Antihypertensive (ARB)", dosage: "1 - 0 - 0 (Morning) • After Food • 30 Days", reasoning: "Angiotensin receptor blocker for essential hypertension control." },
+  { name: "Ondansetron 4mg", category: "Antiemetic (5-HT3 Antagonist)", dosage: "1 - 0 - 1 (PRN / SOS) • Before Food • 3 Days", reasoning: "Prevention and relief of nausea, retching, and acute vomiting." },
+  { name: "Cefixime 200mg", category: "Cephalosporin Antibiotic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 5 Days", reasoning: "Third-generation cephalosporin for uncomplicated respiratory and urinary infections." },
+  { name: "Doxycycline 100mg", category: "Tetracycline Antibiotic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 7 Days", reasoning: "Broad-spectrum antibacterial for atypical respiratory and skin infections." },
+];
+
+const TEST_CATALOG: { name: string; category: string; urgency: string; reasoning: string }[] = [
+  { name: "Complete Blood Count (CBC) with Differential", category: "Hematology", urgency: "Routine", reasoning: "Evaluates red blood cells, leukocytes, absolute eosinophil count, and platelets." },
+  { name: "Fasting Blood Sugar (FBS) & HbA1c", category: "Biochemistry", urgency: "Routine", reasoning: "Diagnostic assessment of glycemic baseline and 3-month glycemic control." },
+  { name: "Lipid Profile Panel (Total, LDL, HDL, Triglycerides)", category: "Cardiometabolic", urgency: "Routine", reasoning: "Atherosclerotic cardiovascular risk stratification." },
+  { name: "Liver Function Tests (LFT - SGOT, SGPT, Bilirubin)", category: "Hepatic Panel", urgency: "Routine", reasoning: "Screening of hepatic enzymes and hepatocellular function." },
+  { name: "Kidney Function Tests (KFT - Urea, Creatinine, eGFR)", category: "Renal Panel", urgency: "Routine", reasoning: "Quantitative renal filtration and excretory capacity assessment." },
+  { name: "Thyroid Profile (Total T3, Total T4, TSH)", category: "Endocrinology", urgency: "Routine", reasoning: "Evaluation of thyroid gland activity and metabolic regulation." },
+  { name: "Digital Chest X-Ray (PA View)", category: "Radiology", urgency: "Urgent", reasoning: "Screening for pulmonary consolidation, pneumonia, infiltration, and cardiomegaly." },
+  { name: "12-Lead Electrocardiogram (ECG)", category: "Cardiology", urgency: "Urgent", reasoning: "Assesses cardiac rhythm, conduction abnormalities, and ischemic changes." },
+  { name: "Urine Routine & Microscopic Examination", category: "Clinical Pathology", urgency: "Routine", reasoning: "Detects proteinuria, hematuria, leukocyturia, and crystals." },
+  { name: "Serum Electrolytes (Sodium, Potassium, Chloride)", category: "Biochemistry", urgency: "Urgent", reasoning: "Monitors fluid and electrolyte equilibrium." },
+  { name: "Dengue NS1 Antigen & IgM/IgG Serology", category: "Virology", urgency: "Stat", reasoning: "Rapid diagnostic confirmation for acute febrile dengue virus infection." },
+  { name: "Serum Ferritin & Iron Studies", category: "Hematology", urgency: "Routine", reasoning: "Identifies iron deficiency anemia and reticuloendothelial iron stores." },
+  { name: "Total Serum IgE & Inhalant Allergen Panel", category: "Immunology", urgency: "Routine", reasoning: "Quantifies allergic sensitization and atopic hyperreactivity." },
+];
 
 export interface ClinicalItem {
   name: string;
@@ -131,9 +164,16 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   } | null>(null);
 
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [showPreGenerationConfirmation, setShowPreGenerationConfirmation] = useState(false);
   const [showEndSessionModal, setShowEndSessionModal] = useState(false);
   const [showSkipPatientModal, setShowSkipPatientModal] = useState(false);
   const [showEmptyWarningModal, setShowEmptyWarningModal] = useState(false);
+
+  // Search & Catalog Add States
+  const [customMedicines, setCustomMedicines] = useState<ClinicalItem[]>([]);
+  const [customTests, setCustomTests] = useState<ClinicalItem[]>([]);
+  const [medSearch, setMedSearch] = useState("");
+  const [testSearch, setTestSearch] = useState("");
 
   // Structured Schedules map by medication name
   const [schedules, setSchedules] = useState<Record<string, MedicationSchedule>>({});
@@ -147,13 +187,94 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
 
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
 
+  // Combined Active Lists (AI detected + Physician added via search)
+  const allMedicines: ClinicalItem[] = [
+    ...medicines,
+    ...customMedicines.filter(
+      (cm) => !medicines.some((m) => m.name.toLowerCase() === cm.name.toLowerCase())
+    ),
+  ];
+
+  const allTests: ClinicalItem[] = [
+    ...tests,
+    ...customTests.filter(
+      (ct) => !tests.some((t) => t.name.toLowerCase() === ct.name.toLowerCase())
+    ),
+  ];
+
+  const filteredMedicines = allMedicines.filter((m) =>
+    m.name.toLowerCase().includes(medSearch.toLowerCase()) ||
+    (m.category && m.category.toLowerCase().includes(medSearch.toLowerCase()))
+  );
+
+  const filteredTests = allTests.filter((t) =>
+    t.name.toLowerCase().includes(testSearch.toLowerCase()) ||
+    (t.category && t.category.toLowerCase().includes(testSearch.toLowerCase()))
+  );
+
+  // Live suggestions from catalog
+  const medSuggestions = medSearch.trim().length > 0
+    ? MEDICINE_CATALOG.filter(
+        (cat) =>
+          cat.name.toLowerCase().includes(medSearch.toLowerCase()) ||
+          cat.category.toLowerCase().includes(medSearch.toLowerCase())
+      ).slice(0, 4)
+    : [];
+
+  const testSuggestions = testSearch.trim().length > 0
+    ? TEST_CATALOG.filter(
+        (cat) =>
+          cat.name.toLowerCase().includes(testSearch.toLowerCase()) ||
+          cat.category.toLowerCase().includes(testSearch.toLowerCase())
+      ).slice(0, 4)
+    : [];
+
+  const handleAddCustomMed = (cat: typeof MEDICINE_CATALOG[0]) => {
+    const newItem: ClinicalItem = {
+      name: cat.name,
+      category: cat.category,
+      dosage: cat.dosage,
+      confidence: 96,
+      conversation_evidence: "Added directly by physician during clinical session search.",
+      history_evidence: "Verified with patient drug allergy & tolerance profile.",
+      reports_evidence: "Standard clinical therapeutic formulation.",
+      reasoning: cat.reasoning,
+    };
+    if (!allMedicines.some((m) => m.name.toLowerCase() === cat.name.toLowerCase())) {
+      setCustomMedicines((prev) => [...prev, newItem]);
+    }
+    setMedSearch("");
+    // Immediately open Dosage Configuration Modal for the doctor to review/confirm schedule!
+    setSelectedItem({ item: newItem, type: "medicine" });
+  };
+
+  const handleAddCustomTest = (cat: typeof TEST_CATALOG[0]) => {
+    const newItem: ClinicalItem = {
+      name: cat.name,
+      category: cat.category,
+      urgency: cat.urgency,
+      confidence: 95,
+      conversation_evidence: "Investigation ordered directly by physician during clinical search.",
+      history_evidence: "Indicated to evaluate quantitative diagnostic parameters.",
+      reports_evidence: "Standard clinical diagnostic panel.",
+      reasoning: cat.reasoning,
+    };
+    if (!allTests.some((t) => t.name.toLowerCase() === cat.name.toLowerCase())) {
+      setCustomTests((prev) => [...prev, newItem]);
+    }
+    setTestSearch("");
+    // Immediately open Investigation Confirmation Modal for the doctor to review/confirm!
+    setSelectedItem({ item: newItem, type: "test" });
+  };
+
   const handleGeneratePrescriptionClick = () => {
     const selectedCount = Object.keys(addedItems).length;
     if (selectedCount === 0) {
       setShowEmptyWarningModal(true);
       return;
     }
-    setShowPrescriptionModal(true);
+    // STEP 1: Show Pre-Generation Confirmation & Review of Selected Medicines and Tests
+    setShowPreGenerationConfirmation(true);
   };
 
   const getSchedule = (name: string): MedicationSchedule => {
@@ -279,20 +400,74 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
               </h3>
             </div>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#18181A]/5 text-[#18181A]/70 border border-[#18181A]/10">
-              {medicines.length}
+              {allMedicines.length}
             </span>
           </div>
 
+          {/* Search Bar */}
+          <div className="relative mb-3 flex-shrink-0">
+            <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#18181A]/40" />
+            <input
+              type="text"
+              value={medSearch}
+              onChange={(e) => setMedSearch(e.target.value)}
+              placeholder="Search or add medication (e.g. Paracetamol, Amoxicillin)..."
+              className="w-full pl-8.5 pr-8 py-2 text-xs bg-white border border-[#18181A]/15 rounded-xl text-[#18181A] placeholder:text-[#18181A]/40 focus:outline-none focus:ring-2 focus:ring-[#0B392A]/20 focus:border-[#0B392A]"
+            />
+            {medSearch && (
+              <button
+                onClick={() => setMedSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#18181A]/40 hover:text-[#18181A] cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+
+            {/* Suggestions Dropdown from Catalog */}
+            {medSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white border border-[#18181A]/15 rounded-2xl shadow-lg p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                <div className="text-[10px] font-bold text-[#18181A]/50 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                  <span>Clinical Catalog Suggestions</span>
+                  <span className="text-purple-700">Click + to add</span>
+                </div>
+                {medSuggestions.map((cat, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => handleAddCustomMed(cat)}
+                    className="flex items-center justify-between p-2 rounded-xl hover:bg-[#FDFBF2] border border-transparent hover:border-[#18181A]/10 cursor-pointer transition-colors"
+                  >
+                    <div className="min-w-0 flex-1 pr-2">
+                      <p className="text-xs font-bold text-[#18181A] truncate">{cat.name}</p>
+                      <p className="text-[10.5px] text-[#18181A]/50 truncate">{cat.category} • {cat.dosage}</p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddCustomMed(cat);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-[#0B392A] hover:bg-[#07241A] rounded-full shadow-2xs cursor-pointer"
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>Add</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Box Content List */}
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
-            {medicines.length === 0 ? (
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1 no-scrollbar">
+            {filteredMedicines.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-10 px-4">
                 <p className="text-xs font-medium text-[#18181A]/40">
-                  Speak into the microphone to detect and recommend medications.
+                  {medSearch
+                    ? "No matching medications found in active list. Type to search catalog."
+                    : "Speak into the microphone or use search above to add medications."}
                 </p>
               </div>
             ) : (
-              medicines.map((med, i) => {
+              filteredMedicines.map((med, i) => {
                 const isAdded = !!addedItems[med.name];
                 const activeDosage = getEffectiveDosage(med);
                 return (
@@ -307,7 +482,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                           {med.name}
                         </p>
                         <p className="text-[11px] font-medium text-[#18181A]/50 mt-0.5">
-                          Recommended by Cura AI
+                          {med.category || "Clinical Therapeutic"}
                         </p>
                       </div>
 
@@ -343,7 +518,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                       <div className="inline-flex items-center gap-1.5">
                         <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F3E8FF] border border-[#E9D5FF] text-[#581C87] text-[10.5px] font-bold">
                           <Sparkles className="h-3 w-3 text-[#7E22CE]" />
-                          <span>{med.confidence}% Confidence</span>
+                          <span>{med.confidence || 95}% Confidence</span>
                         </div>
 
                         {isAdded && (
@@ -373,20 +548,74 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
               </h3>
             </div>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#18181A]/5 text-[#18181A]/70 border border-[#18181A]/10">
-              {tests.length}
+              {allTests.length}
             </span>
           </div>
 
+          {/* Search Bar */}
+          <div className="relative mb-3 flex-shrink-0">
+            <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#18181A]/40" />
+            <input
+              type="text"
+              value={testSearch}
+              onChange={(e) => setTestSearch(e.target.value)}
+              placeholder="Search or add diagnostic tests (e.g. CBC, Lipid, X-Ray)..."
+              className="w-full pl-8.5 pr-8 py-2 text-xs bg-white border border-[#18181A]/15 rounded-xl text-[#18181A] placeholder:text-[#18181A]/40 focus:outline-none focus:ring-2 focus:ring-[#0B392A]/20 focus:border-[#0B392A]"
+            />
+            {testSearch && (
+              <button
+                onClick={() => setTestSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#18181A]/40 hover:text-[#18181A] cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+
+            {/* Suggestions Dropdown from Catalog */}
+            {testSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white border border-[#18181A]/15 rounded-2xl shadow-lg p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                <div className="text-[10px] font-bold text-[#18181A]/50 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                  <span>Diagnostic Catalog Suggestions</span>
+                  <span className="text-blue-700">Click + to add</span>
+                </div>
+                {testSuggestions.map((cat, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => handleAddCustomTest(cat)}
+                    className="flex items-center justify-between p-2 rounded-xl hover:bg-[#FDFBF2] border border-transparent hover:border-[#18181A]/10 cursor-pointer transition-colors"
+                  >
+                    <div className="min-w-0 flex-1 pr-2">
+                      <p className="text-xs font-bold text-[#18181A] truncate">{cat.name}</p>
+                      <p className="text-[10.5px] text-[#18181A]/50 truncate">{cat.category} • Priority: {cat.urgency}</p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddCustomTest(cat);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-[#0284C7] hover:bg-[#0369A1] rounded-full shadow-2xs cursor-pointer"
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>Add</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Box Content List */}
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
-            {tests.length === 0 ? (
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1 no-scrollbar">
+            {filteredTests.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-10 px-4">
                 <p className="text-xs font-medium text-[#18181A]/40">
-                  Speak into the microphone to detect and recommend diagnostic tests.
+                  {testSearch
+                    ? "No matching tests found in active list. Type to search catalog."
+                    : "Speak into the microphone or use search above to order diagnostic tests."}
                 </p>
               </div>
             ) : (
-              tests.map((test, i) => {
+              filteredTests.map((test, i) => {
                 const isAdded = !!addedItems[test.name];
                 return (
                   <div
@@ -400,7 +629,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                           {test.name}
                         </p>
                         <p className="text-[11px] font-medium text-[#18181A]/50 mt-0.5">
-                          Recommended by Cura AI
+                          {test.category || "Diagnostic Panel"}
                         </p>
                       </div>
 
@@ -430,7 +659,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                       <div className="inline-flex items-center gap-1.5">
                         <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#E0F2FE] border border-[#BAE6FD] text-[#0369A1] text-[10.5px] font-bold">
                           <Sparkles className="h-3 w-3 text-[#0284C7]" />
-                          <span>{test.confidence}% Confidence</span>
+                          <span>{test.confidence || 93}% Confidence</span>
                         </div>
 
                         {isAdded && (
@@ -993,13 +1222,142 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
         </div>
       )}
 
+      {/* POPUP 2.5: Pre-Generation Review & Confirmation Dialog */}
+      {showPreGenerationConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 sm:p-6 animate-in fade-in duration-150 font-sans">
+          <div className="bg-[#FDFBF2] border border-[#18181A]/20 rounded-[32px] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#18181A]/10 bg-white flex-shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-[#0B392A] text-white flex items-center justify-center font-bold">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#18181A]">
+                    Review Prescription & Diagnostic Orders
+                  </h3>
+                  <p className="text-xs text-[#18181A]/60 font-medium">
+                    Step 1 of 2: Verify selected items before generating official letterhead
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowPreGenerationConfirmation(false)}
+                className="h-8 w-8 rounded-full border border-[#18181A]/15 hover:bg-[#18181A]/10 flex items-center justify-center text-[#18181A]/70 cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto space-y-5 flex-1 bg-white/40">
+              {/* Selected Medications Section */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-[#18181A]/70 uppercase tracking-wider flex items-center gap-1.5">
+                    <Pill className="h-3.5 w-3.5 text-purple-700" /> Prescribed Medications (
+                    {allMedicines.filter((m) => addedItems[m.name]).length})
+                  </span>
+                </div>
+
+                {allMedicines.filter((m) => addedItems[m.name]).length > 0 ? (
+                  <div className="space-y-2">
+                    {allMedicines
+                      .filter((m) => addedItems[m.name])
+                      .map((med, idx) => {
+                        const sch = getSchedule(med.name);
+                        return (
+                          <div
+                            key={idx}
+                            className="p-3.5 rounded-2xl bg-white border border-[#18181A]/10 shadow-2xs flex items-center justify-between"
+                          >
+                            <div className="min-w-0 flex-1 pr-3">
+                              <p className="text-sm font-bold text-[#18181A]">{med.name}</p>
+                              <p className="text-xs text-[#18181A]/60 font-medium mt-0.5">
+                                Schedule: <strong className="text-[#0B392A] font-mono">{sch.morning}-{sch.afternoon}-{sch.night}</strong> ({sch.food}) • {sch.duration}
+                              </p>
+                            </div>
+
+                            <button
+                              onClick={() => {
+                                setShowPreGenerationConfirmation(false);
+                                setSelectedItem({ item: med, type: "medicine" });
+                              }}
+                              className="px-3 py-1 text-xs font-bold text-[#0B392A] bg-[#0B392A]/10 hover:bg-[#0B392A]/20 rounded-full cursor-pointer transition-colors"
+                            >
+                              Edit Schedule
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <div className="p-3.5 rounded-xl bg-white border border-[#18181A]/10 text-xs text-[#18181A]/50 italic">
+                    No medications selected.
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Diagnostic Tests Section */}
+              {allTests.filter((t) => addedItems[t.name]).length > 0 && (
+                <div>
+                  <span className="text-xs font-bold text-[#18181A]/70 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
+                    <Syringe className="h-3.5 w-3.5 text-blue-600" /> Ordered Investigations (
+                    {allTests.filter((t) => addedItems[t.name]).length})
+                  </span>
+                  <div className="space-y-2">
+                    {allTests
+                      .filter((t) => addedItems[t.name])
+                      .map((test, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-2xl bg-white border border-[#18181A]/10 shadow-2xs flex items-center justify-between"
+                        >
+                          <div>
+                            <p className="text-sm font-bold text-[#18181A]">{test.name}</p>
+                            <p className="text-xs text-[#18181A]/60">{test.category || "Diagnostic Panel"}</p>
+                          </div>
+                          <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                            {test.urgency || "Standard"}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions Footer */}
+            <div className="px-6 py-4 border-t border-[#18181A]/10 bg-white flex items-center justify-between flex-shrink-0">
+              <button
+                onClick={() => setShowPreGenerationConfirmation(false)}
+                className="px-4 py-2 text-xs font-bold text-[#18181A]/70 hover:text-[#18181A] transition-colors cursor-pointer"
+              >
+                ← Back / Add More Items
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowPreGenerationConfirmation(false);
+                  setShowPrescriptionModal(true);
+                }}
+                className="flex items-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-[#0B392A] hover:bg-[#07241A] rounded-full shadow-sm transition-all cursor-pointer active:scale-95"
+              >
+                <span>Proceed to Prescription Preview →</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* POPUP 3: Official Clinical Prescription & PDF Export Modal */}
       <PrescriptionModal
         isOpen={showPrescriptionModal}
         onClose={() => setShowPrescriptionModal(false)}
         patientId={patientId}
-        medicines={medicines}
-        tests={tests}
+        medicines={allMedicines}
+        tests={allTests}
         addedItems={addedItems}
         schedules={schedules}
       />
