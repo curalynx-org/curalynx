@@ -20,8 +20,12 @@ import {
   FileClock,
   FlaskConical,
   BookOpenCheck,
+  LogOut,
+  SkipForward,
+  AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { SessionControls } from "@/components/session/session-controls";
 import { PrescriptionModal } from "@/components/session/prescription-modal";
 
@@ -120,12 +124,16 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
     };
   });
 
+  const router = useRouter();
   const [selectedItem, setSelectedItem] = useState<{
     item: ClinicalItem;
     type: "medicine" | "test";
   } | null>(null);
 
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [showEndSessionModal, setShowEndSessionModal] = useState(false);
+  const [showSkipPatientModal, setShowSkipPatientModal] = useState(false);
+  const [showEmptyWarningModal, setShowEmptyWarningModal] = useState(false);
 
   // Structured Schedules map by medication name
   const [schedules, setSchedules] = useState<Record<string, MedicationSchedule>>({});
@@ -138,6 +146,15 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   } | null>(null);
 
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
+
+  const handleGeneratePrescriptionClick = () => {
+    const selectedCount = Object.keys(addedItems).length;
+    if (selectedCount === 0) {
+      setShowEmptyWarningModal(true);
+      return;
+    }
+    setShowPrescriptionModal(true);
+  };
 
   const getSchedule = (name: string): MedicationSchedule => {
     return (
@@ -241,7 +258,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
         </div>
 
         <SessionControls
-          onGeneratePrescription={() => setShowPrescriptionModal(true)}
+          onGeneratePrescription={handleGeneratePrescriptionClick}
+          onSkipPatient={() => setShowSkipPatientModal(true)}
+          onEndSession={() => setShowEndSessionModal(true)}
         />
       </div>
 
@@ -984,6 +1003,132 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
         addedItems={addedItems}
         schedules={schedules}
       />
+
+      {/* POPUP 4: End Session Confirmation Modal */}
+      {showEndSessionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150 font-sans">
+          <div className="bg-[#FDFBF2] border border-[#18181A]/20 rounded-[32px] p-7 max-w-md w-full shadow-2xl text-center space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="h-14 w-14 rounded-3xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-700">
+              <LogOut className="h-7 w-7" />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold text-[#18181A] tracking-tight">
+                End Clinical Consultation?
+              </h3>
+              <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
+                Ending this session will finalize the consultation notes and return to the appointments dashboard.
+              </p>
+            </div>
+
+            {/* Session Summary Snapshot */}
+            <div className="bg-white border border-[#18181A]/10 rounded-2xl p-4 text-left text-xs space-y-2">
+              <div className="flex justify-between items-center text-[#18181A]">
+                <span className="text-[#18181A]/50 font-semibold">Patient:</span>
+                <span className="font-bold">Rahul Sharma (CX-{patientId.slice(0, 8).toUpperCase()})</span>
+              </div>
+              <div className="flex justify-between items-center text-[#18181A]">
+                <span className="text-[#18181A]/50 font-semibold">Prescriptions Added:</span>
+                <span className="font-bold text-[#0B392A]">{Object.keys(addedItems).length} item(s)</span>
+              </div>
+              <div className="flex justify-between items-center text-[#18181A]">
+                <span className="text-[#18181A]/50 font-semibold">Status:</span>
+                <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-[10.5px]">Ready to Complete</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                onClick={() => setShowEndSessionModal(false)}
+                className="w-full py-2.5 text-xs font-bold rounded-full border border-[#18181A]/20 bg-white text-[#18181A] hover:bg-[#18181A]/5 transition-colors cursor-pointer"
+              >
+                Continue Session
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowEndSessionModal(false);
+                  router.push("/dashboard/appointments");
+                }}
+                className="w-full py-2.5 text-xs font-bold rounded-full text-white bg-[#18181A] hover:bg-black transition-all shadow-xs cursor-pointer active:scale-95"
+              >
+                Complete & Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP 5: Skip Patient Confirmation Modal */}
+      {showSkipPatientModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150 font-sans">
+          <div className="bg-[#FDFBF2] border border-[#18181A]/20 rounded-[32px] p-7 max-w-md w-full shadow-2xl text-center space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="h-14 w-14 rounded-3xl bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto text-blue-700">
+              <SkipForward className="h-7 w-7" />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold text-[#18181A] tracking-tight">
+                Skip Current Patient?
+              </h3>
+              <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
+                This will place the current patient in the deferred queue and advance to the next scheduled appointment.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                onClick={() => setShowSkipPatientModal(false)}
+                className="w-full py-2.5 text-xs font-bold rounded-full border border-[#18181A]/20 bg-white text-[#18181A] hover:bg-[#18181A]/5 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowSkipPatientModal(false);
+                  router.push("/dashboard/appointments");
+                }}
+                className="w-full py-2.5 text-xs font-bold rounded-full text-white bg-[#0284C7] hover:bg-[#0369A1] transition-all shadow-xs cursor-pointer active:scale-95"
+              >
+                Skip to Next
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP 6: Empty Selection Warning Modal */}
+      {showEmptyWarningModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150 font-sans">
+          <div className="bg-[#FDFBF2] border border-[#18181A]/20 rounded-[32px] p-7 max-w-md w-full shadow-2xl text-center space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="h-14 w-14 rounded-3xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-700">
+              <AlertTriangle className="h-7 w-7" />
+            </div>
+
+            <div>
+              <span className="text-[10.5px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100/60 px-2.5 py-0.5 rounded-full inline-block mb-1.5">
+                No Items Prescribed
+              </span>
+              <h3 className="text-xl font-bold text-[#18181A] tracking-tight">
+                Cannot Generate Empty Prescription
+              </h3>
+              <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
+                You haven&apos;t added any medications or lab tests to the prescription list yet. Please click the <strong>+</strong> button on any suggested medication or test to configure dosage and add it to the Rx.
+              </p>
+            </div>
+
+            <div className="pt-1">
+              <button
+                onClick={() => setShowEmptyWarningModal(false)}
+                className="w-full py-2.5 text-xs font-bold rounded-full text-white bg-[#18181A] hover:bg-black transition-all shadow-xs cursor-pointer active:scale-95"
+              >
+                Review Suggestions & Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

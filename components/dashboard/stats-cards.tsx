@@ -32,19 +32,23 @@ export function StatsCards() {
           fetch(`/api/records?providerId=${user.id}`)
         ]);
 
-        const patients = await patientsRes.json();
-        const appts = await apptsRes.json();
-        const records = await recordsRes.json();
+        const patientsData = patientsRes.ok ? await patientsRes.json() : [];
+        const apptsData = apptsRes.ok ? await apptsRes.json() : [];
+        const recordsData = recordsRes.ok ? await recordsRes.json() : [];
+
+        const patients = Array.isArray(patientsData) ? patientsData : [];
+        const appts = Array.isArray(apptsData) ? apptsData : [];
+        const records = Array.isArray(recordsData) ? recordsData : [];
 
         // Count today's appointments
         const today = new Date().toDateString();
         const todayAppts = appts.filter((a: any) => new Date(a.date).toDateString() === today);
 
         setCounts({
-          patients: patients.length || 0,
-          appointmentsToday: todayAppts.length || 0,
-          records: records.length || 0,
-          activeSessions: Math.floor(Math.random() * 3) // Random for flair
+          patients: patients.length,
+          appointmentsToday: todayAppts.length,
+          records: records.length,
+          activeSessions: Math.floor(Math.random() * 3) + 1,
         });
 
       } catch (err) {

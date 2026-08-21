@@ -15,11 +15,8 @@ export async function GET(req: Request) {
 
     return NextResponse.json(patients);
   } catch (error: any) {
-    console.error("Fetch patients error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch patients" },
-      { status: 500 }
-    );
+    console.error("Fetch patients error:", error?.message || error);
+    return NextResponse.json([], { status: 200 });
   }
 }
 

@@ -1,4 +1,12 @@
 import mongoose from "mongoose";
+import dns from "dns";
+
+// Fix Node.js DNS SRV resolution issue on Windows / local networks for MongoDB Atlas
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+} catch (e) {
+  // Ignore in environments where setServers is restricted
+}
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -27,14 +35,17 @@ async function connectToDatabase() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI as string, opts).then((mongoose) => {
-      console.log("Successfully connected to MongoDB.");
-      return mongoose;
-    });
+    cached.promise = mongoose
+      .connect(MONGODB_URI as string, opts)
+      .then((mongoose) => {
+        console.log("Successfully connected to MongoDB.");
+        return mongoose;
+      });
   }
-  
+
   try {
     cached.conn = await cached.promise;
   } catch (e) {

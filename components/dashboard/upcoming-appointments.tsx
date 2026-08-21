@@ -18,7 +18,7 @@ export function UpcomingAppointments() {
         const data = await res.json();
         
         if (res.ok) {
-          setAppointments(data);
+          setAppointments(Array.isArray(data) ? data : []);
         }
       } catch (err) {
         console.error("Failed to fetch appointments", err);

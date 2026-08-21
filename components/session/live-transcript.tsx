@@ -24,91 +24,106 @@ export function LiveTranscript({
   onToggleRecording,
 }: LiveTranscriptProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomAnchorRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll on every new message or recording state change
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    const timeout = setTimeout(() => {
+      if (bottomAnchorRef.current) {
+        bottomAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+      } else if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 50);
+
+    return () => clearTimeout(timeout);
   }, [messages, isRecording]);
 
   return (
-    <div className="flex flex-col h-full bg-[#FDFBF2] overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="relative flex h-3 w-3">
+    <div className="flex flex-col h-full bg-[#FDFBF2] overflow-hidden font-sans">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 flex-shrink-0 border-b border-[#18181A]/5">
+        <div className="flex items-center gap-2">
+          <div className="relative flex h-2.5 w-2.5">
             {isRecording && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0B392A] opacity-75"></span>
             )}
             <span
-              className={`relative inline-flex rounded-full h-3 w-3 ${
+              className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
                 isRecording ? "bg-[#0B392A]" : "bg-[#18181A]/40"
               }`}
             ></span>
           </div>
-          <h2 className="text-2xl font-serif text-[#18181A]">Live Transcription</h2>
+          <h3 className="text-xs font-bold text-[#18181A] uppercase tracking-wider">
+            Live Transcription
+          </h3>
         </div>
 
         <button
           onClick={onToggleRecording}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors border ${
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all border cursor-pointer shadow-2xs ${
             isRecording
               ? "bg-[#0B392A] text-white border-[#0B392A] hover:bg-[#07241A]"
-              : "bg-transparent text-[#18181A] border-[#18181A]/20 hover:bg-[#18181A]/5"
+              : "bg-white text-[#18181A] border-[#18181A]/20 hover:bg-[#18181A]/5"
           }`}
         >
-          {isRecording ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-          {isRecording ? "Listening" : "Paused"}
+          {isRecording ? <Mic className="h-3 w-3" /> : <MicOff className="h-3 w-3" />}
+          {isRecording ? "Listening" : "Start Mic"}
         </button>
       </div>
 
-      {/* Transcript Area */}
+      {/* Transcript Stream Area */}
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 pb-6"
+        className="flex-1 min-h-0 overflow-y-auto space-y-3 p-4 scroll-smooth"
       >
         {messages.length === 0 && !isRecording && (
-          <div className="text-center text-muted-foreground mt-10 text-sm">
-            Click "Paused" above to start the session.
+          <div className="flex flex-col items-center justify-center h-full text-center py-6 px-3">
+            <div className="h-9 w-9 rounded-full bg-white border border-[#18181A]/10 flex items-center justify-center text-[#18181A]/40 mb-2">
+              <Mic className="h-4 w-4" />
+            </div>
+            <p className="text-xs font-medium text-[#18181A]/50">
+              Click &quot;Start Mic&quot; to begin capturing real-time doctor-patient conversation.
+            </p>
           </div>
         )}
 
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex gap-3 max-w-[88%] ${
+            className={`flex gap-2 max-w-[92%] ${
               msg.speaker === "doctor" ? "ml-auto flex-row-reverse" : ""
             }`}
           >
             {/* Avatar */}
             <div
-              className={`flex-shrink-0 h-9 w-9 rounded-full flex items-center justify-center border ${
+              className={`flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center border text-xs ${
                 msg.speaker === "doctor"
-                  ? "bg-[#E9D5FF] border-[#18181A] text-[#18181A]"
+                  ? "bg-[#E9D5FF] border-[#18181A]/20 text-[#18181A]"
                   : "bg-white border-[#18181A]/20 text-[#18181A]/60"
               }`}
             >
               {msg.speaker === "doctor" ? (
-                <Stethoscope className="h-4 w-4" />
+                <Stethoscope className="h-3.5 w-3.5" />
               ) : (
-                <User className="h-4 w-4" />
+                <User className="h-3.5 w-3.5" />
               )}
             </div>
 
             {/* Message Bubble */}
             <div
-              className={`flex flex-col gap-1 ${
+              className={`flex flex-col gap-0.5 ${
                 msg.speaker === "doctor" ? "items-end" : "items-start"
               }`}
             >
-              <span className="text-[11px] font-bold text-[#18181A]/40 px-1 uppercase tracking-wider">
+              <span className="text-[9.5px] font-bold text-[#18181A]/40 px-1 uppercase tracking-wider">
                 {msg.speaker === "doctor" ? "Doctor" : "Patient"} • {msg.timestamp}
               </span>
               <div
-                className={`px-4 py-2.5 rounded-[20px] text-sm leading-relaxed shadow-sm border ${
+                className={`px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-2xs border ${
                   msg.speaker === "doctor"
-                    ? "bg-[#18181A] text-white border-[#18181A] rounded-tr-sm"
-                    : "bg-[#FDFBF2] text-[#18181A] border-[#18181A]/10 rounded-tl-sm"
+                    ? "bg-[#18181A] text-white border-[#18181A] rounded-tr-xs"
+                    : "bg-white text-[#18181A] border-[#18181A]/15 rounded-tl-xs"
                 }`}
               >
                 {msg.text}
@@ -117,19 +132,22 @@ export function LiveTranscript({
           </div>
         ))}
 
-        {/* Typing indicator / Listening effect */}
+        {/* Listening Indicator */}
         {isRecording && (
-          <div className="flex gap-3 max-w-[85%]">
-            <div className="flex-shrink-0 h-9 w-9 rounded-full flex items-center justify-center border bg-white border-[#18181A]/20 text-[#18181A]/60">
-              <User className="h-4 w-4" />
+          <div className="flex gap-2 max-w-[85%]">
+            <div className="flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center border bg-white border-[#18181A]/20 text-[#18181A]/60">
+              <User className="h-3.5 w-3.5" />
             </div>
-            <div className="flex items-center gap-1.5 bg-[#FDFBF2] border border-[#18181A]/10 px-4 py-3 rounded-[20px] rounded-tl-sm shadow-sm h-[44px]">
-              <span className="h-2 w-2 bg-[#18181A]/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-              <span className="h-2 w-2 bg-[#18181A]/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-              <span className="h-2 w-2 bg-[#18181A]/40 rounded-full animate-bounce"></span>
+            <div className="flex items-center gap-1 bg-white border border-[#18181A]/15 px-3 py-2 rounded-2xl rounded-tl-xs shadow-2xs h-8">
+              <span className="h-1.5 w-1.5 bg-[#0B392A] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="h-1.5 w-1.5 bg-[#0B392A] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="h-1.5 w-1.5 bg-[#0B392A] rounded-full animate-bounce"></span>
             </div>
           </div>
         )}
+
+        {/* Invisible Bottom Anchor for Auto-Scroll */}
+        <div ref={bottomAnchorRef} className="h-1" />
       </div>
     </div>
   );

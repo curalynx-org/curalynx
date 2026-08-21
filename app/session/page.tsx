@@ -174,26 +174,29 @@ export default function SessionPage() {
   }, []);
 
   return (
-    <div className="flex h-screen w-full bg-[#FDFBF2] overflow-hidden flex-col md:flex-row font-sans text-[#18181A]">
-      {/* Left Sidebar - Patient Context & Extras */}
-      <aside className="w-full md:w-72 lg:w-80 border-r border-[#18181A]/10 flex-shrink-0 flex flex-col h-full overflow-hidden z-10 bg-transparent">
-        <PatientSidebar />
+    <div className="flex h-screen w-full bg-[#FDFBF2] overflow-hidden flex-col lg:flex-row font-sans text-[#18181A]">
+      {/* Left Sidebar: Top = Patient Details (Spacious), Bottom = Live Transcription (Lowered Down) */}
+      <aside className="w-full lg:w-80 xl:w-[380px] border-r border-[#18181A]/10 flex-shrink-0 flex flex-col h-full overflow-hidden bg-transparent">
+        {/* Top: Patient Details & Medical History */}
+        <div className="flex-1 min-h-0 overflow-y-auto bg-white/30">
+          <PatientSidebar patientId={patientId} />
+        </div>
+
+        {/* Bottom: Live Transcription (Anchored to the lower portion) */}
+        <div className="h-[250px] xl:h-[280px] flex-shrink-0 border-t border-[#18181A]/10 bg-[#FDFBF2] flex flex-col overflow-hidden">
+          <LiveTranscript
+            patientId={patientId}
+            messages={messages}
+            isRecording={isRecording}
+            onToggleRecording={toggleRecording}
+          />
+        </div>
       </aside>
 
-      {/* Main Center Area - AI Insights */}
-      <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-transparent px-8 pt-6 pb-6">
+      {/* Main Right Area: Cura AI Insights, Medications & Tests */}
+      <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-transparent px-6 xl:px-8 pt-5 pb-5">
         <AIInsights patientId={patientId} insights={insights} />
       </main>
-
-      {/* Right Sidebar - Live Transcript */}
-      <aside className="w-full md:w-80 lg:w-[420px] flex-shrink-0 flex flex-col h-full overflow-hidden bg-[#FDFBF2] border-l border-[#18181A]/10">
-        <LiveTranscript
-          patientId={patientId}
-          messages={messages}
-          isRecording={isRecording}
-          onToggleRecording={toggleRecording}
-        />
-      </aside>
     </div>
   );
 }
