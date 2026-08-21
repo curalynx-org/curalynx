@@ -2,10 +2,49 @@
 
 import { Activity, ArrowRight, CheckCircle2, User, Stethoscope } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [role, setRole] = useState<"provider" | "patient">("provider");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      // Save user info to localStorage (for demo purposes)
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      if (role === "provider") {
+        router.push("/dashboard");
+      } else {
+        router.push("/patient/portal");
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-[#FDFBF2] overflow-hidden">
@@ -106,7 +145,7 @@ export default function LoginPage() {
           {/* Role Toggle */}
           <div className="flex items-center p-1 bg-[#18181A]/5 rounded-xl mb-10 w-fit mx-auto lg:mx-0">
             <button
-              onClick={() => setRole("provider")}
+              onClick={() => { setRole("provider"); setError(""); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                 role === "provider" 
                   ? "bg-[#FDFBF2] text-[#18181A] shadow-sm border border-[#18181A]/10" 
@@ -117,7 +156,7 @@ export default function LoginPage() {
               Provider
             </button>
             <button
-              onClick={() => setRole("patient")}
+              onClick={() => { setRole("patient"); setError(""); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                 role === "patient" 
                   ? "bg-[#FDFBF2] text-[#18181A] shadow-sm border border-[#18181A]/10" 
@@ -140,13 +179,20 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleLogin}>
+            {error && (
+              <div className="bg-red-50 text-red-600 text-sm font-bold p-3 rounded-lg border border-red-200">
+                {error}
+              </div>
+            )}
             <div className="space-y-1.5 group">
               <label className="text-[11px] font-bold text-[#18181A] uppercase tracking-wider group-focus-within:text-[#0B392A] transition-colors">
                 {role === "provider" ? "Work Email" : "Email or Phone Number"}
               </label>
               <input 
                 type={role === "provider" ? "email" : "text"}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder={role === "provider" ? "doctor@clinic.com" : "you@example.com"}
                 className="w-full h-12 rounded-xl border border-[#18181A]/20 bg-transparent px-4 text-[15px] font-medium text-[#18181A] placeholder:text-[#18181A]/30 focus:border-[#0B392A] focus:ring-1 focus:ring-[#0B392A] outline-none transition-all"
                 required
@@ -164,19 +210,22 @@ export default function LoginPage() {
               </div>
               <input 
                 type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••" 
                 className="w-full h-12 rounded-xl border border-[#18181A]/20 bg-transparent px-4 text-[15px] font-medium text-[#18181A] placeholder:text-[#18181A]/30 focus:border-[#0B392A] focus:ring-1 focus:ring-[#0B392A] outline-none transition-all tracking-widest"
                 required
               />
             </div>
 
-            <Link 
-              href={role === "provider" ? "/dashboard" : "/patient/portal"} 
-              className="w-full h-12 mt-4 bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] text-[#18181A] rounded-xl text-[15px] font-bold transition-all hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center gap-2 group shadow-sm"
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-12 mt-4 bg-[#E9D5FF] border border-[#18181A] hover:bg-[#D8B4FE] disabled:opacity-50 text-[#18181A] rounded-xl text-[15px] font-bold transition-all hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center gap-2 group shadow-sm"
             >
-              {role === "provider" ? "Sign In to Workspace" : "Access Patient Portal"}
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-            </Link>
+              {isLoading ? "Signing in..." : role === "provider" ? "Sign In to Workspace" : "Access Patient Portal"}
+              {!isLoading && <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />}
+            </button>
           </form>
 
           <div className="mt-10 text-center">
