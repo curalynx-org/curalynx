@@ -1,39 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Mic, MicOff, Stethoscope, User } from "lucide-react";
 
 type Message = {
   id: string;
-  speaker: "doctor" | "patient";
+  speaker: "doctor" | "patient" | "unknown";
   text: string;
   timestamp: string;
 };
 
-const initialMessages: Message[] = [
-  {
-    id: "1",
-    speaker: "doctor",
-    text: "Hello Priya, how are you feeling today?",
-    timestamp: "10:00 AM",
-  },
-  {
-    id: "2",
-    speaker: "patient",
-    text: "Hi doctor. Not great, honestly. I've been having this persistent headache for the last two days.",
-    timestamp: "10:01 AM",
-  },
-  {
-    id: "3",
-    speaker: "patient",
-    text: "And I am having some stomach pains too.",
-    timestamp: "10:01 AM",
-  },
-];
+interface LiveTranscriptProps {
+  patientId: string;
+  messages: Message[];
+  isRecording: boolean;
+  onToggleRecording: () => void;
+}
 
-export function LiveTranscript() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [isRecording, setIsRecording] = useState(true);
+export function LiveTranscript({ patientId, messages, isRecording, onToggleRecording }: LiveTranscriptProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,7 +41,7 @@ export function LiveTranscript() {
         </div>
         
         <button
-          onClick={() => setIsRecording(!isRecording)}
+          onClick={onToggleRecording}
           className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors border ${
             isRecording 
               ? 'bg-[#0B392A] text-white border-[#0B392A] hover:bg-[#07241A]' 
@@ -74,6 +58,11 @@ export function LiveTranscript() {
         ref={scrollRef}
         className="flex-1 overflow-y-auto space-y-6 px-8 pb-8"
       >
+        {messages.length === 0 && !isRecording && (
+          <div className="text-center text-muted-foreground mt-10 text-sm">
+            Click "Paused" above to start the session.
+          </div>
+        )}
         {messages.map((msg) => (
           <div 
             key={msg.id} 
@@ -91,7 +80,7 @@ export function LiveTranscript() {
             {/* Message Bubble */}
             <div className={`flex flex-col gap-1 ${msg.speaker === 'doctor' ? 'items-end' : 'items-start'}`}>
               <span className="text-[11px] font-bold text-[#18181A]/40 px-1 uppercase tracking-wider">
-                {msg.speaker === 'doctor' ? 'Dr. Sarah' : 'Priya'} • {msg.timestamp}
+                {msg.speaker === 'doctor' ? 'Doctor' : 'Patient'} • {msg.timestamp}
               </span>
               <div className={`px-5 py-3.5 rounded-[20px] text-[15px] leading-relaxed shadow-sm border ${
                 msg.speaker === 'doctor'

@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+websockets
+python-dotenv
+groq
+pydub
+# Pyannote requirements (Requires PyTorch and torchaudio installed per system specs)
+pyannote.audio

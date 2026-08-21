@@ -10,13 +10,14 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { AddPatientModal } from "./add-patient-modal";
+import { StartSessionModal } from "./start-session-modal";
 
 const actions = [
   {
     icon: Mic,
     label: "Start Session",
     description: "Begin live transcription",
-    href: "/dashboard", // Currently points to dashboard since we don't have a dedicated session page yet
+    onClick: "session",
     color: "bg-primary text-primary-foreground",
     iconBg: "bg-primary-foreground/15",
   },
@@ -24,7 +25,7 @@ const actions = [
     icon: UserPlus,
     label: "Add Patient",
     description: "Register new patient",
-    onClick: true,
+    onClick: "patient",
     color: "bg-card text-foreground border border-border",
     iconBg: "bg-emerald-100 text-emerald-600",
   },
@@ -48,6 +49,7 @@ const actions = [
 
 export function QuickActions() {
   const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
+  const [isStartSessionOpen, setIsStartSessionOpen] = useState(false);
 
   return (
     <>
@@ -70,11 +72,23 @@ export function QuickActions() {
 
             const className = `group flex flex-col items-center gap-2.5 rounded-xl p-4 transition-all hover:shadow-sm cursor-pointer ${action.color}`;
 
-            if (action.onClick) {
+            if (action.onClick === "patient") {
               return (
                 <button
                   key={action.label}
                   onClick={() => setIsAddPatientOpen(true)}
+                  className={className}
+                >
+                  {Content}
+                </button>
+              );
+            }
+
+            if (action.onClick === "session") {
+              return (
+                <button
+                  key={action.label}
+                  onClick={() => setIsStartSessionOpen(true)}
                   className={className}
                 >
                   {Content}
@@ -98,6 +112,10 @@ export function QuickActions() {
       <AddPatientModal 
         isOpen={isAddPatientOpen} 
         onClose={() => setIsAddPatientOpen(false)} 
+      />
+      <StartSessionModal 
+        isOpen={isStartSessionOpen}
+        onClose={() => setIsStartSessionOpen(false)}
       />
     </>
   );
