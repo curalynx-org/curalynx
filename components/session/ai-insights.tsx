@@ -1048,11 +1048,11 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
               <button
                 onClick={() => {
                   setShowEndSessionModal(false);
-                  router.push("/dashboard/appointments");
+                  router.push("/dashboard");
                 }}
                 className="w-full py-2.5 text-xs font-bold rounded-full text-white bg-[#18181A] hover:bg-black transition-all shadow-xs cursor-pointer active:scale-95"
               >
-                Complete & Exit
+                Complete & Exit to Dashboard
               </button>
             </div>
           </div>
@@ -1069,10 +1069,10 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
 
             <div>
               <h3 className="text-xl font-bold text-[#18181A] tracking-tight">
-                Skip Current Patient?
+                Skip Current Patient & Start New Session?
               </h3>
               <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
-                This will place the current patient in the deferred queue and advance to the next scheduled appointment.
+                This will defer the current patient and immediately initiate a fresh new consultation session.
               </p>
             </div>
 
@@ -1087,11 +1087,14 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
               <button
                 onClick={() => {
                   setShowSkipPatientModal(false);
-                  router.push("/dashboard/appointments");
+                  const hexTime = Date.now().toString(16);
+                  const randomHex = Math.floor(Math.random() * 0xffffffffff).toString(16).padStart(10, '0');
+                  const newSessionId = `6a882cbd${hexTime.slice(-6)}${randomHex.slice(-10)}`;
+                  router.push(`/dashboard/session/${newSessionId}`);
                 }}
                 className="w-full py-2.5 text-xs font-bold rounded-full text-white bg-[#0284C7] hover:bg-[#0369A1] transition-all shadow-xs cursor-pointer active:scale-95"
               >
-                Skip to Next
+                Start New Session
               </button>
             </div>
           </div>

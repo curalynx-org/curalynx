@@ -26,7 +26,7 @@ const navItems = [
 ];
 
 export function DashboardSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [userProfile, setUserProfile] = useState<{
     name: string;
     role: string;

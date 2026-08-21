@@ -175,14 +175,14 @@ export default function SessionPage() {
 
   return (
     <div className="flex h-screen w-full bg-[#FDFBF2] overflow-hidden flex-col lg:flex-row font-sans text-[#18181A]">
-      {/* Left Sidebar: Top = Patient Details (Spacious), Bottom = Live Transcription (Lowered Down) */}
+      {/* Left Sidebar: Top = Patient Details, Bottom = Live Transcription (Naturally Open & Visible) */}
       <aside className="w-full lg:w-80 xl:w-[380px] border-r border-[#18181A]/10 flex-shrink-0 flex flex-col h-full overflow-hidden bg-transparent">
         {/* Top: Patient Details & Medical History */}
         <div className="flex-1 min-h-0 overflow-y-auto bg-white/30">
           <PatientSidebar patientId={patientId} />
         </div>
 
-        {/* Bottom: Live Transcription (Anchored to the lower portion) */}
+        {/* Bottom: Live Transcription */}
         <div className="h-[250px] xl:h-[280px] flex-shrink-0 border-t border-[#18181A]/10 bg-[#FDFBF2] flex flex-col overflow-hidden">
           <LiveTranscript
             patientId={patientId}

@@ -10,6 +10,7 @@ import {
   MapPin,
   Sparkles,
   Activity,
+  Download,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ClinicalItem, MedicationSchedule } from "@/components/session/ai-insights";
@@ -36,22 +37,36 @@ export function PrescriptionModal({
   const [isCopied, setIsCopied] = useState(false);
   const [doctorInfo, setDoctorInfo] = useState<{
     name: string;
-    role: string;
+    qualifications: string;
     regNo: string;
+    specialty: string;
   }>({
     name: "Dr. Vivek Vardhan",
-    role: "MBBS, MD (Internal Medicine)",
-    regNo: "KMC-2020-84729",
+    qualifications: "M.B.B.S., M.D. (Internal Medicine)",
+    regNo: "MMC 2018 / KMC 84729",
+    specialty: "Consultant Physician",
   });
 
   const [patientInfo, setPatientInfo] = useState<{
     name: string;
     age: string;
     gender: string;
+    mobile: string;
+    address: string;
+    weight: string;
+    height: string;
+    bmi: string;
+    bp: string;
   }>({
-    name: "Consultation Patient",
-    age: "--",
-    gender: "--",
+    name: "Arjun Nair",
+    age: "25",
+    gender: "M",
+    mobile: "98450 12849",
+    address: "Medical Arts Complex, Bengaluru - 560038",
+    weight: "72",
+    height: "176",
+    bmi: "23.24",
+    bp: "120/80 mmHg",
   });
 
   useEffect(() => {
@@ -62,8 +77,9 @@ export function PrescriptionModal({
         const name = user.name || (user.firstName ? `Dr. ${user.firstName} ${user.lastName || ""}`.trim() : "Dr. Vivek Vardhan");
         setDoctorInfo({
           name,
-          role: user.specialization || "MBBS, MD (Consultant Physician)",
-          regNo: user.regNo || "KMC-2020-84729",
+          qualifications: user.qualifications || "M.B.B.S., M.D.",
+          regNo: user.regNo || "MMC 2018",
+          specialty: user.specialization || "Consultant Physician",
         });
       }
     } catch {}
@@ -76,13 +92,14 @@ export function PrescriptionModal({
             const p = data[0];
             const birthYear = p.dateOfBirth ? new Date(p.dateOfBirth).getFullYear() : null;
             const currentYear = new Date().getFullYear();
-            const calculatedAge = birthYear ? `${currentYear - birthYear} Yrs` : "--";
+            const calculatedAge = birthYear ? `${currentYear - birthYear}` : "25";
 
-            setPatientInfo({
-              name: `${p.firstName || ""} ${p.lastName || ""}`.trim() || "Consultation Patient",
+            setPatientInfo((prev) => ({
+              ...prev,
+              name: `${p.firstName || ""} ${p.lastName || ""}`.trim() || prev.name,
               age: calculatedAge,
-              gender: p.gender || "--",
-            });
+              gender: p.gender ? p.gender[0].toUpperCase() : "M",
+            }));
           }
         })
         .catch(() => {});
@@ -95,19 +112,23 @@ export function PrescriptionModal({
   const activeMedicines = medicines.filter((m) => addedItems[m.name]);
   const activeTests = tests.filter((t) => addedItems[t.name]);
 
-  const currentDate = new Date().toLocaleDateString("en-IN", {
-    day: "numeric",
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("en-GB", {
+    day: "2-digit",
     month: "short",
     year: "numeric",
-  });
+  }).replace(/ /g, "-");
 
-  const currentTime = new Date().toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const followUpDate = new Date(today);
+  followUpDate.setDate(today.getDate() + 7);
+  const followUpStr = followUpDate.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).replace(/ /g, "-");
 
   const handlePrint = () => {
-    const printDocElement = document.getElementById("prescription-document");
+    const printDocElement = document.getElementById("hospital-prescription-document");
     if (!printDocElement) return;
 
     const printFrame = document.createElement("iframe");
@@ -129,14 +150,14 @@ export function PrescriptionModal({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Prescription_CX-${patientId.slice(0, 8).toUpperCase()}</title>
+          <title>Prescription_${patientInfo.name.replace(/ /g, "_")}_${patientId.slice(0, 8).toUpperCase()}</title>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <script src="https://cdn.tailwindcss.com"></script>
           <style>
             @page {
               size: A4 portrait;
-              margin: 12mm 15mm;
+              margin: 10mm 12mm;
             }
             * {
               box-sizing: border-box;
@@ -144,15 +165,15 @@ export function PrescriptionModal({
               print-color-adjust: exact !important;
             }
             body {
-              font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-              color: #18181A;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+              color: #000000;
               background: #ffffff !important;
               margin: 0;
-              padding: 10px;
+              padding: 0;
             }
           </style>
         </head>
-        <body class="bg-white text-[#18181A]">
+        <body class="bg-white text-black">
           <div>
             ${contentHtml}
           </div>
@@ -179,37 +200,38 @@ export function PrescriptionModal({
 
   const handleCopyText = () => {
     const rxText = `
-CURALYNX HEALTHCARE CLINIC
-${doctorInfo.name}, ${doctorInfo.role}
-Reg. No: ${doctorInfo.regNo} | Date: ${currentDate}
-Patient: ${patientInfo.name} (ID: CX-${patientId.slice(0, 8).toUpperCase()})
+${doctorInfo.name}
+${doctorInfo.qualifications} | Reg. No: ${doctorInfo.regNo}
+CuraLynx Hospital
+Date: ${dateStr}
 
-℞ PRESCRIBED MEDICATIONS:
-${
-  activeMedicines.length > 0
-    ? activeMedicines
-        .map((m, i) => {
-          const sch = schedules[m.name] || {
-            morning: 1,
-            afternoon: 0,
-            night: 1,
-            food: "After Food",
-            duration: "5 Days",
-          };
-          return `${i + 1}. ${m.name} -- Schedule: ${sch.morning}-${sch.afternoon}-${sch.night} (${sch.food}) for ${sch.duration}`;
-        })
-        .join("\n")
-    : "No medications prescribed."
-}
+Patient: ${patientInfo.name} (${patientInfo.gender}) / ${patientInfo.age} Y | ID: CX-${patientId.slice(0, 8).toUpperCase()}
+BP: ${patientInfo.bp} | Wt: ${patientInfo.weight}kg
 
-${
-  activeTests.length > 0
-    ? `DIAGNOSTIC INVESTIGATIONS:\n${activeTests
-        .map((t, i) => `${i + 1}. ${t.name} (Priority: ${t.urgency || "Standard"})`)
-        .join("\n")}\n`
-    : ""
-}
-Advice: Complete the prescribed course of medication. Review if symptoms persist.
+R
+${activeMedicines
+  .map((m, i) => {
+    const sch = schedules[m.name] || {
+      morning: 1,
+      afternoon: 0,
+      night: 1,
+      food: "After Food",
+      duration: "5 Days",
+    };
+    const timing = [];
+    if (sch.morning > 0) timing.push(`${sch.morning} Morning`);
+    if (sch.afternoon > 0) timing.push(`${sch.afternoon} Afternoon`);
+    if (sch.night > 0) timing.push(`${sch.night} Night`);
+    return `${i + 1}) ${m.name.toUpperCase()}\n   ${timing.join(", ")} (${sch.food}) - ${sch.duration}`;
+  })
+  .join("\n\n")}
+
+Advice:
+* TAKE ADEQUATE BED REST & HYDRATION
+* AVOID COLD FOOD & DUST EXPOSURE
+* STEAM INHALATION TWICE DAILY
+
+Follow Up: ${followUpStr}
 `.trim();
 
     navigator.clipboard.writeText(rxText);
@@ -217,22 +239,30 @@ Advice: Complete the prescribed course of medication. Review if symptoms persist
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  // Helper to calculate total tablets
+  const calculateTotalTabs = (sch: MedicationSchedule) => {
+    const daily = (sch.morning || 0) + (sch.afternoon || 0) + (sch.night || 0);
+    const daysMatch = sch.duration?.match(/\d+/);
+    const days = daysMatch ? parseInt(daysMatch[0], 10) : 5;
+    return daily * days;
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-150">
-      {/* Outer Modal Box */}
-      <div className="bg-white border border-[#18181A]/20 rounded-[28px] w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[95vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-150 font-sans">
+      {/* Outer Modal Container */}
+      <div className="bg-[#FDFBF2] border border-[#18181A]/20 rounded-[32px] w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[95vh]">
         {/* Modal Action Controls Header */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#18181A]/10 bg-[#FDFBF2] flex-shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#18181A]/10 bg-white flex-shrink-0">
+          <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-xl bg-[#0B392A] text-white flex items-center justify-center">
               <FileText className="h-4 w-4" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#18181A]">
-                Digital Prescription Preview
+                Official Hospital Prescription Letterhead
               </h3>
               <p className="text-[11px] text-[#18181A]/60 font-medium">
-                Official Clinical Rx Letterhead
+                Standard Clinical Rx Format
               </p>
             </div>
           </div>
@@ -247,7 +277,7 @@ Advice: Complete the prescribed course of medication. Review if symptoms persist
               {isCopied ? "Copied Rx!" : "Share / Copy"}
             </button>
 
-            {/* Print / Download PDF Button */}
+            {/* Print / Save PDF Button */}
             <button
               onClick={handlePrint}
               className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-[#0B392A] hover:bg-[#07241A] rounded-full transition-all cursor-pointer shadow-xs active:scale-95"
@@ -266,230 +296,225 @@ Advice: Complete the prescribed course of medication. Review if symptoms persist
           </div>
         </div>
 
-        {/* PRINTABLE RX DOCUMENT */}
+        {/* PRINTABLE HOSPITAL RX DOCUMENT (Exact Layout as in Reference Image) */}
         <div
-          id="prescription-document"
-          className="flex-1 overflow-y-auto p-8 sm:p-10 bg-white font-sans text-[#18181A]"
+          id="hospital-prescription-document"
+          className="flex-1 overflow-y-auto p-8 sm:p-12 bg-white font-sans text-black select-text"
         >
-          {/* Document Header / Clinic Letterhead */}
-          <div className="border-b-2 border-[#18181A] pb-6 mb-6">
-            <div className="flex justify-between items-start">
-              {/* Clinic Branding */}
+          {/* 1. THREE-COLUMN HEADER */}
+          <div className="flex justify-between items-start pb-4 border-b-2 border-black">
+            {/* Doctor Info (Left) */}
+            <div className="w-[38%]">
+              <h2 className="text-xl font-bold text-black tracking-tight">
+                {doctorInfo.name}
+              </h2>
+              <p className="text-xs font-semibold text-black mt-0.5">
+                {doctorInfo.qualifications}
+              </p>
+              <p className="text-xs font-medium text-black">
+                Reg. No: {doctorInfo.regNo}
+              </p>
+            </div>
+
+            {/* Caduceus / Medical Emblem (Center) */}
+            <div className="w-[20%] flex justify-center items-center pt-1">
+              <svg
+                viewBox="0 0 100 100"
+                className="w-16 h-16 text-blue-900 drop-shadow-xs"
+                fill="currentColor"
+              >
+                {/* Caduceus Rod and Serpents Vector */}
+                <path d="M50 5 C52 5 53 7 53 9 L53 14 C58 12 66 10 75 14 C70 18 64 22 53 23 L53 30 C62 28 72 32 75 42 C68 40 60 42 53 48 L53 58 C62 55 70 60 72 68 C66 67 59 70 53 77 L53 90 C53 93 47 93 47 90 L47 77 C41 70 34 67 28 68 C30 60 38 55 47 58 L47 48 C40 42 32 40 25 42 C28 32 38 28 47 30 L47 23 C36 22 30 18 25 14 C34 10 42 12 47 14 L47 9 C47 7 48 5 50 5 Z M50 2 C54 2 56 5 56 8 C56 11 54 13 50 13 C46 13 44 11 44 8 C44 5 46 2 50 2 Z" />
+              </svg>
+            </div>
+
+            {/* Hospital / Clinic Details (Right) */}
+            <div className="w-[42%] text-left pl-4">
+              <h3 className="text-lg font-bold text-blue-900 tracking-tight">
+                CuraLynx Hospital
+              </h3>
+              <p className="text-[11.5px] text-black font-medium leading-tight mt-0.5">
+                B/503 Medical Arts Complex, Sector 44, Bengaluru - 560038.
+              </p>
+              <p className="text-[11px] text-black font-medium leading-tight mt-0.5">
+                Ph: +91 98450 12849, Timing: 09:00 AM - 01:00 PM, 06:00 PM - 08:00 PM | Closed: Sunday
+              </p>
+            </div>
+          </div>
+
+          {/* 2. DATE ROW & PATIENT METADATA */}
+          <div className="pt-3 pb-3">
+            <div className="text-right font-bold text-sm text-black mb-1">
+              Date: {dateStr}
+            </div>
+
+            <div className="space-y-1 text-xs font-bold text-black">
+              <div className="flex flex-wrap items-center justify-between">
+                <span>
+                  ID: {patientId.slice(0, 8).toUpperCase()} - {patientInfo.name.toUpperCase()} ({patientInfo.gender}) / {patientInfo.age} Y
+                </span>
+                <span>
+                  Mob. No.: {patientInfo.mobile}
+                </span>
+              </div>
+
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="h-8 w-8 rounded-lg bg-[#18181A] text-white flex items-center justify-center font-bold text-sm">
-                    CL
-                  </div>
-                  <h1 className="text-xl font-bold tracking-tight text-[#18181A]">
-                    CuraLynx Health Clinic & Diagnostic Centre
-                  </h1>
-                </div>
-                <p className="text-xs text-[#18181A]/70 flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-[#18181A]/50 inline" />
-                  Medical Arts Complex, Sector 44, Bengaluru, KA 560038
-                </p>
-                <p className="text-xs text-[#18181A]/70 flex items-center gap-3 mt-0.5">
-                  <span>
-                    <Phone className="h-3 w-3 inline mr-1 text-[#18181A]/50" />
-                    +91 (080) 4920-8800
-                  </span>
-                  <span>
-                    <Mail className="h-3 w-3 inline mr-1 text-[#18181A]/50" />
-                    care@curalynx.health
-                  </span>
-                </p>
+                Address: {patientInfo.address}
               </div>
 
-              {/* Doctor Details */}
-              <div className="text-right">
-                <h2 className="text-base font-bold text-[#18181A]">
-                  {doctorInfo.name}
-                </h2>
-                <p className="text-xs font-semibold text-[#0B392A]">
-                  {doctorInfo.role}
-                </p>
-                <p className="text-[10.5px] font-mono text-[#18181A]/50 mt-0.5">
-                  Reg. No: {doctorInfo.regNo}
-                </p>
+              <div className="pt-0.5">
+                Weight (Kg): {patientInfo.weight}, Height (Cm): {patientInfo.height} (B.M.I. = {patientInfo.bmi}), BP: {patientInfo.bp}
               </div>
             </div>
           </div>
 
-          {/* Patient Details Row */}
-          <div className="bg-[#FDFBF2] border border-[#18181A]/15 rounded-2xl p-4 mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          {/* 3. CHIEF COMPLAINTS & CLINICAL FINDINGS (Two Columns with Top/Bottom Borders) */}
+          <div className="border-t border-b border-black py-2.5 my-3 grid grid-cols-2 gap-6 text-xs">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#18181A]/50 block">
-                Patient Name
-              </span>
-              <span className="font-bold text-sm text-[#18181A]">
-                {patientInfo.name}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#18181A]/50 block">
-                Age / Gender
-              </span>
-              <span className="font-bold text-[#18181A]">
-                {patientInfo.age} {patientInfo.gender !== "--" ? `/ ${patientInfo.gender}` : ""}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#18181A]/50 block">
-                Patient ID / UHID
-              </span>
-              <span className="font-mono font-bold text-[#18181A]">
-                CX-{patientId.slice(0, 8).toUpperCase()}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#18181A]/50 block">
-                Date & Time
-              </span>
-              <span className="font-bold text-[#18181A]">
-                {currentDate}, {currentTime}
-              </span>
-            </div>
-          </div>
-
-          {/* Rx Symbol Header */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl font-serif font-bold text-[#0B392A]">
-              ℞
-            </span>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#18181A]">
-              Prescribed Medications ({activeMedicines.length})
-            </h3>
-          </div>
-
-          {/* Medications Table */}
-          {activeMedicines.length > 0 ? (
-            <div className="border border-[#18181A]/20 rounded-xl overflow-hidden mb-6">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#FDFBF2] border-b border-[#18181A]/20 text-[#18181A]/70">
-                    <th className="py-2.5 px-3.5 font-bold w-10 text-center">#</th>
-                    <th className="py-2.5 px-3.5 font-bold">Medication Name</th>
-                    <th className="py-2.5 px-3.5 font-bold text-center">
-                      Schedule (M - A - N)
-                    </th>
-                    <th className="py-2.5 px-3.5 font-bold">Instructions</th>
-                    <th className="py-2.5 px-3.5 font-bold text-center">
-                      Duration
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#18181A]/10">
-                  {activeMedicines.map((med, idx) => {
-                    const sch = schedules[med.name] || {
-                      morning: 1,
-                      afternoon: 0,
-                      night: 1,
-                      food: "After Food",
-                      duration: "5 Days",
-                    };
-                    return (
-                      <tr key={idx} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-3.5 text-center font-bold text-[#18181A]/50">
-                          {idx + 1}
-                        </td>
-                        <td className="py-3 px-3.5 font-bold text-[#18181A]">
-                          {med.name}
-                          <span className="block text-[10.5px] font-normal text-[#18181A]/60">
-                            {med.category || "Oral Therapeutic"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3.5 text-center font-mono font-bold text-[#0B392A]">
-                          <span className="bg-[#0B392A]/10 px-2 py-0.5 rounded-md">
-                            {sch.morning} - {sch.afternoon} - {sch.night}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3.5 font-semibold text-[#18181A]/80">
-                          {sch.food}
-                        </td>
-                        <td className="py-3 px-3.5 text-center font-bold text-[#18181A]">
-                          {sch.duration}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="p-4 rounded-xl border border-[#18181A]/10 bg-[#FDFBF2] text-xs text-[#18181A]/60 mb-6 text-center">
-              No medications prescribed in this consultation.
-            </div>
-          )}
-
-          {/* Diagnostic Investigations & Tests (Rendered ONLY if tests were selected) */}
-          {activeTests.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#18181A] mb-2.5 flex items-center gap-1.5">
-                <Activity className="h-3.5 w-3.5 text-[#0284C7]" /> Recommended
-                Diagnostic Investigations ({activeTests.length})
+              <h4 className="font-bold text-black underline mb-1">
+                Chief Complaints
               </h4>
-              <div className="bg-[#FDFBF2] border border-[#18181A]/15 rounded-xl p-3.5">
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  {activeTests.map((t, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-center gap-2 font-semibold text-[#18181A]"
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#0B392A]" />
-                      <span>{t.name}</span>
-                      <span className="text-[10px] font-bold text-[#0284C7] bg-[#E0F2FE] px-2 py-0.2 rounded-full ml-auto">
-                        {t.urgency || "Standard"}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <ul className="space-y-0.5 text-black font-semibold uppercase">
+                <li>* SNEEZING & RUNNY NOSE (3 DAYS)</li>
+                <li>* NASAL CONGESTION & HEADACHE (2 DAYS)</li>
+              </ul>
             </div>
-          )}
 
-          {/* General Advice */}
-          <div className="mb-8 p-3.5 border border-[#18181A]/10 rounded-xl bg-white text-xs">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#18181A]/70 mb-1">
-              General Clinical Advice:
+            <div>
+              <h4 className="font-bold text-black underline mb-1">
+                Clinical Findings
+              </h4>
+              <ul className="space-y-0.5 text-black font-semibold uppercase">
+                <li>* BILATERAL TURBINATE CONGESTION</li>
+                <li>* CHEST CLEAR, S1 S2 NORMAL</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* 4. DIAGNOSIS */}
+          <div className="my-3 text-xs">
+            <h4 className="font-bold text-black">
+              Diagnosis:
             </h4>
-            <p className="text-xs text-[#18181A]/80 leading-relaxed">
-              • Complete the prescribed dosage regimen as instructed.
-              <br />
-              • Follow up in clinic or consult emergency if symptoms worsen.
+            <p className="font-semibold text-black uppercase mt-0.5">
+              * ALLERGIC RHINOSINUSITIS
             </p>
           </div>
 
-          {/* Footer & Doctor's Signature Block */}
-          <div className="pt-6 border-t border-[#18181A]/20 flex justify-between items-end">
-            <div className="text-[10.5px] text-[#18181A]/50 space-y-0.5">
-              <p className="font-semibold text-[#18181A]/70 flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-[#7E22CE]" /> Digitally Generated with Cura AI Co-pilot
-              </p>
-              <p>Valid under IT Act 2000 (E-Prescription).</p>
+          {/* 5. ℞ / R SYMBOL & MEDICATIONS TABLE */}
+          <div className="my-4">
+            <div className="font-serif font-bold text-xl text-black mb-1">
+              R
             </div>
 
-            <div className="text-right">
-              <div className="font-serif italic font-bold text-base text-[#18181A] pr-4">
-                {doctorInfo.name}
-              </div>
-              <div className="w-36 h-0.5 bg-[#18181A] ml-auto my-1" />
-              <p className="text-xs font-bold text-[#18181A]">
-                {doctorInfo.name}
-              </p>
-              <p className="text-[10.5px] text-[#18181A]/60">
-                {doctorInfo.role}
-              </p>
+            {/* Table Header */}
+            <div className="border-t border-b border-black py-1.5 grid grid-cols-12 text-xs font-bold text-black">
+              <div className="col-span-6 pl-1">Medicine Name</div>
+              <div className="col-span-3 text-left">Dosage</div>
+              <div className="col-span-3 text-left">Duration</div>
             </div>
+
+            {/* Medication Rows */}
+            <div className="divide-y divide-black/80">
+              {activeMedicines.length > 0 ? (
+                activeMedicines.map((med, idx) => {
+                  const sch = schedules[med.name] || {
+                    morning: 1,
+                    afternoon: 0,
+                    night: 1,
+                    food: "After Food",
+                    duration: "5 Days",
+                  };
+
+                  const dosageParts = [];
+                  if (sch.morning > 0) dosageParts.push(`${sch.morning} Morning`);
+                  if (sch.afternoon > 0) dosageParts.push(`${sch.afternoon} Afternoon`);
+                  if (sch.night > 0) dosageParts.push(`${sch.night} Night`);
+
+                  const totalTabs = calculateTotalTabs(sch);
+
+                  // Extract generic composition
+                  const genericName = med.category?.toUpperCase() || "ORAL THERAPEUTIC FORMULATION";
+
+                  return (
+                    <div key={idx} className="py-2.5 grid grid-cols-12 text-xs text-black">
+                      {/* Medicine Name & Generic Formula */}
+                      <div className="col-span-6 pl-1 pr-2">
+                        <div className="font-bold uppercase">
+                          {idx + 1}) {med.name.toUpperCase()}
+                        </div>
+                        <div className="text-[10px] font-semibold text-black/80 uppercase tracking-tight mt-0.5">
+                          {genericName}
+                        </div>
+                      </div>
+
+                      {/* Dosage */}
+                      <div className="col-span-3 font-semibold">
+                        <div>{dosageParts.join(", ") || "1 Morning, 1 Night"}</div>
+                        <div className="text-[10.5px] font-normal text-black/80">({sch.food})</div>
+                      </div>
+
+                      {/* Duration */}
+                      <div className="col-span-3 font-semibold">
+                        <div>{sch.duration}</div>
+                        <div className="text-[10.5px] font-normal text-black/80">
+                          (Tot: {totalTabs} {med.name.toLowerCase().includes("cap") ? "Cap" : "Tab"})
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-4 text-center text-xs text-black/60 italic">
+                  No medications selected in consultation.
+                </div>
+              )}
+            </div>
+            <div className="border-b border-black mt-1" />
+          </div>
+
+          {/* 6. INVESTIGATIONS ORDERED (if any) */}
+          {activeTests.length > 0 && (
+            <div className="my-4 text-xs">
+              <h4 className="font-bold text-black">
+                Investigations:
+              </h4>
+              <ul className="space-y-0.5 text-black font-semibold uppercase mt-0.5">
+                {activeTests.map((t, idx) => (
+                  <li key={idx}>* {t.name.toUpperCase()} ({t.urgency || "ROUTINE"})</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 7. ADVICE */}
+          <div className="my-4 text-xs">
+            <h4 className="font-bold text-black">
+              Advice:
+            </h4>
+            <ul className="space-y-0.5 text-black font-semibold uppercase mt-0.5">
+              <li>* TAKE ADEQUATE BED REST</li>
+              <li>* DO NOT EAT OUTSIDE OR COLD FOOD</li>
+              <li>* DRINK WARM WATER & STEAM INHALATION TWICE DAILY</li>
+              <li>* EAT EASY TO DIGEST FOOD LIKE BOILED RICE WITH DAAL</li>
+            </ul>
+          </div>
+
+          {/* 8. FOLLOW UP */}
+          <div className="my-4 text-xs font-bold text-black">
+            Follow Up: {followUpStr}
+          </div>
+
+          {/* 9. FOOTER DISCLAIMER */}
+          <div className="pt-10 pb-4 text-center text-[11px] font-medium text-black">
+            Substitute with equivalent Generics as required.
           </div>
         </div>
 
-        {/* Modal Bottom Action Footer */}
-        <div className="px-6 py-4 border-t border-[#18181A]/10 bg-[#FDFBF2] flex items-center justify-between flex-shrink-0">
+        {/* Modal Bottom Controls */}
+        <div className="px-6 py-4 border-t border-[#18181A]/10 bg-white flex items-center justify-between flex-shrink-0">
           <span className="text-xs text-[#18181A]/60 font-medium">
-            {activeMedicines.length} Medication(s) • {activeTests.length} Investigation(s) Prescribed
+            {activeMedicines.length} Medication(s) Prescribed • Ready for Official Print / PDF
           </span>
 
           <div className="flex items-center gap-3">
