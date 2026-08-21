@@ -49,115 +49,182 @@ export async function POST(req: Request) {
       },
     });
 
-    // Build plain text summary
+    // Build professional plain text summary
     const medLines = medicines.map((m: any, idx: number) => {
       const sch = schedules[m.name] || { morning: 1, afternoon: 0, night: 1, food: "After Food", duration: "5 Days" };
-      return `${idx + 1}. ${m.name} — ${sch.morning}-${sch.afternoon}-${sch.night} (${sch.food}) for ${sch.duration}`;
+      return `  • ${m.name} — ${sch.morning}-${sch.afternoon}-${sch.night} (${sch.food}) for ${sch.duration}`;
     });
 
-    const testLines = tests.map((t: any, idx: number) => `${idx + 1}. ${t.name} (${t.urgency || "Routine"})`);
+    const testLines = tests.map((t: any, idx: number) => `  • ${t.name} (${t.urgency || "Routine"})`);
 
-    const emailSubject = docMode === "lab_order"
-      ? `Diagnostic Lab Requisition PDF — ${patientName} (Ref: CX-${patientId.slice(0, 8).toUpperCase()})`
-      : `Official Medical Prescription PDF — ${patientName} (Ref: CX-${patientId.slice(0, 8).toUpperCase()})`;
+    const isLab = docMode === "lab_order";
+    const emailSubject = isLab
+      ? `Diagnostic Lab Requisition — ${patientName} | CuraLynx Hospital`
+      : `Medical Prescription & Consultation Summary — ${patientName} | CuraLynx Hospital`;
 
     const emailText = `
 Dear ${patientName},
 
-Please find your official ${docMode === "lab_order" ? "diagnostic lab investigation requisition" : "medical prescription"} attached as a PDF document from ${doctorName} (${doctorQual}) at CuraLynx Hospital.
+Thank you for visiting CuraLynx Hospital today. Please find your official ${isLab ? "diagnostic lab investigation requisition" : "medical prescription"} attached as a PDF document (${isLab ? "Diagnostic_Lab_Requisition.pdf" : "Medical_Prescription.pdf"}).
 
-Consultation Date: ${dateStr}
-Patient ID: CX-${patientId.slice(0, 8).toUpperCase()}
-Consultant: ${doctorName} | Reg. No: ${doctorReg}
-Hospital: CuraLynx Hospital, Bengaluru
+CONSULTATION DETAILS:
+• Patient Name: ${patientName}
+• Patient ID: CX-${patientId.slice(0, 8).toUpperCase()}
+• Date of Visit: ${dateStr}
+• Consulting Doctor: ${doctorName} (${doctorQual})
+• Medical Registration: ${doctorReg}
+• Diagnosis: Allergic Rhinosinusitis
 
-${docMode === "lab_order" ? `ORDERED DIAGNOSTIC INVESTIGATIONS:\n${testLines.join("\n") || "No tests ordered."}` : `PRESCRIBED MEDICATIONS:\n${medLines.join("\n") || "No medications prescribed."}`}
+${isLab ? `ORDERED INVESTIGATIONS:\n${testLines.join("\n") || "  • No investigations ordered."}` : `PRESCRIBED MEDICATIONS:\n${medLines.join("\n") || "  • No medications prescribed."}`}
 
-${docMode === "rx" && testLines.length > 0 ? `\nRECOMMENDED INVESTIGATIONS:\n${testLines.join("\n")}` : ""}
+${!isLab && testLines.length > 0 ? `\nRECOMMENDED DIAGNOSTIC TESTS:\n${testLines.join("\n")}` : ""}
 
-ADVICE & CLINICAL INSTRUCTIONS:
-• Take adequate rest and stay hydrated.
-• Take all medications strictly according to the specified food timing and schedule.
-• If any adverse reaction or allergy occurs, contact the hospital immediately.
+CARE INSTRUCTIONS:
+• Follow the dosage and food timings strictly as prescribed.
+• Take adequate rest and maintain hydration.
+• If symptoms persist or in case of any adverse reaction, please contact us immediately.
 
-* Attached PDF File contains your complete official letterhead document with doctor's authorization.
-
-* DISCLAIMER: This computer-generated document is valid only after doctor's physical signature and clinic stamp.
-
-Wishing you good health and a speedy recovery!
+Follow-up: 7 Days (or SOS)
 
 Warm regards,
-Curalynx Health Platform
-Central Support: +91 98450 12849
+Department of Internal Medicine
+CuraLynx Hospital
+B/503 Medical Arts Complex, Sector 44, Bengaluru - 560038
+Contact: +91 98450 12849 | support@curalynx.com
 `.trim();
 
-    // Clean HTML email template
+    // Professional, clean Hospital HTML email template
     const emailHtml = `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${emailSubject}</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f7f7f8; margin: 0; padding: 24px; color: #18181a; }
-    .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e4e4e7; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .header { background: #0B392A; color: #ffffff; padding: 24px; text-align: center; }
-    .header h1 { margin: 0 0 4px 0; font-size: 22px; font-weight: 700; }
-    .header p { margin: 0; font-size: 12px; opacity: 0.85; }
-    .body { padding: 24px; }
-    .meta-box { background: #fdfbf2; border: 1px solid #e5e5e5; border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 13px; line-height: 1.6; }
-    .pdf-badge { background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: bold; margin-bottom: 18px; display: block; }
-    .table { width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 20px; font-size: 13px; }
-    .table th { background: #f4f4f5; text-align: left; padding: 10px; border-bottom: 2px solid #18181a; font-size: 11px; text-transform: uppercase; }
-    .table td { padding: 10px; border-bottom: 1px solid #e4e4e7; vertical-align: top; }
-    .disclaimer { font-size: 11px; color: #dc2626; font-weight: bold; text-transform: uppercase; margin-top: 20px; line-height: 1.5; border-top: 1px solid #e4e4e7; padding-top: 12px; }
-    .footer { background: #fafafa; padding: 16px; text-align: center; font-size: 11px; color: #71717a; border-top: 1px solid #e4e4e7; }
+    body { margin: 0; padding: 0; background-color: #f4f5f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased; }
+    .wrapper { width: 100%; table-layout: fixed; background-color: #f4f5f7; padding: 32px 16px; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .header-bar { background-color: #0B392A; padding: 24px 28px; text-align: left; }
+    .brand-title { color: #ffffff; font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.3px; }
+    .brand-sub { color: #86efac; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .content { padding: 28px; }
+    .greeting { font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 10px 0; }
+    .intro-text { font-size: 13.5px; line-height: 1.6; color: #475569; margin: 0 0 20px 0; }
+    .attachment-card { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; display: flex; align-items: center; }
+    .attachment-text { font-size: 12.5px; font-weight: 600; color: #166534; }
+    .meta-table { width: 100%; border-collapse: collapse; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 24px; }
+    .meta-td { padding: 10px 14px; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
+    .meta-label { color: #64748b; font-weight: 600; width: 35%; }
+    .meta-val { color: #0f172a; font-weight: 700; }
+    .section-heading { font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 10px 0; border-bottom: 2px solid #0B392A; padding-bottom: 4px; }
+    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12.5px; }
+    .data-th { background-color: #f1f5f9; color: #334155; font-weight: 700; text-align: left; padding: 9px 12px; border-bottom: 1px solid #cbd5e1; font-size: 11px; text-transform: uppercase; }
+    .data-td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; color: #1e293b; }
+    .med-name { font-weight: 700; color: #0f172a; }
+    .med-gen { font-size: 10.5px; color: #64748b; margin-top: 2px; }
+    .notes-box { background-color: #fafafa; border-left: 3px solid #0B392A; padding: 12px 16px; margin: 20px 0; }
+    .notes-title { font-size: 12px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; }
+    .notes-list { margin: 0; padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.6; }
+    .disclaimer-text { font-size: 10.5px; color: #dc2626; font-weight: 700; line-height: 1.5; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 12px; text-transform: uppercase; }
+    .footer { background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 28px; font-size: 11px; color: #64748b; line-height: 1.6; }
+    .footer strong { color: #334155; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="header">
-      <h1>CuraLynx Hospital</h1>
-      <p>Official ${docMode === "lab_order" ? "Diagnostic Lab Requisition Slip" : "Clinical Medical Prescription"}</p>
-    </div>
-    <div class="body">
-      <div class="pdf-badge">
-        📎 Official PDF Document Attached: ${docMode === "lab_order" ? "Diagnostic_Lab_Requisition.pdf" : "Medical_Prescription.pdf"}
+  <div class="wrapper">
+    <div class="container">
+      <!-- Hospital Header -->
+      <div class="header-bar">
+        <h1 class="brand-title">CuraLynx Hospital</h1>
+        <div class="brand-sub">Department of Internal Medicine • Outpatient Consultation</div>
       </div>
 
-      <div class="meta-box">
-        <strong>Patient Name:</strong> ${patientName} &nbsp;|&nbsp; <strong>UHID:</strong> CX-${patientId.slice(0, 8).toUpperCase()}<br>
-        <strong>Date:</strong> ${dateStr} &nbsp;|&nbsp; <strong>Doctor:</strong> ${doctorName} (${doctorQual})<br>
-        <strong>Diagnosis:</strong> Allergic Rhinosinusitis
-      </div>
+      <!-- Main Content -->
+      <div class="content">
+        <h2 class="greeting">Dear ${patientName},</h2>
+        <p class="intro-text">
+          Thank you for visiting CuraLynx Hospital. Below is the summary of your consultation with <strong>${doctorName}</strong> on <strong>${dateStr}</strong>. Your official signed prescription has also been attached to this email.
+        </p>
 
-      <h3 style="font-size: 15px; margin: 0 0 8px 0; color: #0B392A;">
-        ${docMode === "lab_order" ? "Ordered Diagnostic Investigations" : "Prescribed Pharmacotherapy (Rx)"}
-      </h3>
+        <!-- PDF Attachment Notification -->
+        <div class="attachment-card">
+          <div class="attachment-text">
+            📎 Attached: ${isLab ? "Diagnostic_Lab_Requisition.pdf" : "Medical_Prescription.pdf"} (Official Signed Document)
+          </div>
+        </div>
 
-      ${docMode === "lab_order"
-        ? `<table class="table">
+        <!-- Consultation Metadata -->
+        <table class="meta-table">
+          <tr>
+            <td class="meta-td meta-label">Patient ID / UHID</td>
+            <td class="meta-td meta-val">CX-${patientId.slice(0, 8).toUpperCase()}</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label">Consulting Physician</td>
+            <td class="meta-td meta-val">${doctorName} (${doctorQual})</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label">Registration Number</td>
+            <td class="meta-td meta-val">${doctorReg}</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label">Date of Consultation</td>
+            <td class="meta-td meta-val">${dateStr}</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label" style="border-bottom: none;">Clinical Impression</td>
+            <td class="meta-td meta-val" style="border-bottom: none; color: #0369a1;">Allergic Rhinosinusitis</td>
+          </tr>
+        </table>
+
+        <!-- Prescribed Items Table -->
+        <div class="section-heading">
+          ${isLab ? "Ordered Diagnostic Investigations" : "Prescribed Medications"}
+        </div>
+
+      ${
+        docMode === "lab_order"
+          ? `<table class="table">
               <thead><tr><th>#</th><th>Investigation</th><th>Department</th><th>Priority</th></tr></thead>
               <tbody>
                 ${tests.map((t: any, i: number) => `<tr><td>${i + 1}</td><td><strong>${t.name}</strong></td><td>${t.category || "Pathology"}</td><td><span style="color:#0284c7;font-weight:bold;">${t.urgency || "Routine"}</span></td></tr>`).join("")}
               </tbody>
             </table>`
-        : `<table class="table">
+          : `<table class="table">
               <thead><tr><th>#</th><th>Medicine Name</th><th>Dosage Schedule</th><th>Duration</th></tr></thead>
               <tbody>
                 ${medicines.map((m: any, i: number) => {
-          const sch = schedules[m.name] || { morning: 1, afternoon: 0, night: 1, food: "After Food", duration: "5 Days" };
-          return `<tr><td>${i + 1}</td><td><strong>${m.name}</strong><br><span style="font-size:11px;color:#71717a;">${m.category || "Oral Therapeutic"}</span></td><td>${sch.morning}-${sch.afternoon}-${sch.night} (${sch.food})</td><td>${sch.duration}</td></tr>`;
-        }).join("")}
+                  const sch = schedules[m.name] || { morning: 1, afternoon: 0, night: 1, food: "After Food", duration: "5 Days" };
+                  return `<tr><td>${i + 1}</td><td><strong>${m.name}</strong><br><span style="font-size:11px;color:#71717a;">${m.category || "Oral Therapeutic"}</span></td><td>${sch.morning}-${sch.afternoon}-${sch.night} (${sch.food})</td><td>${sch.duration}</td></tr>`;
+                }).join("")}
               </tbody>
             </table>`
       }
 
-      <div class="disclaimer">
-        * THIS COMPUTER-GENERATED PRESCRIPTION IS VALID ONLY AFTER THE DOCTOR'S PHYSICAL SIGNATURE AND CLINIC STAMP.
+        <!-- Clinical Instructions -->
+        <div class="notes-box">
+          <div class="notes-title">Clinical Guidance & Instructions:</div>
+          <ul class="notes-list">
+            <li>Take all medications strictly as directed with appropriate food timing.</li>
+            <li>Ensure adequate rest and maintain hydration throughout recovery.</li>
+            <li>Follow-up consultation recommended in 7 days or earlier if needed.</li>
+          </ul>
+        </div>
+
+        <div class="disclaimer-text">
+          * This computer-generated document is valid only after the doctor's physical signature and clinic stamp.
+        </div>
       </div>
-    </div>
-    <div class="footer">
-      Sent securely via CuraLynx Healthcare Platform • Questions? Call +91 98450 12849
+
+      <!-- Hospital Footer -->
+      <div class="footer">
+        <strong>CuraLynx Hospital</strong> • B/503 Medical Arts Complex, Sector 44, Bengaluru - 560038<br>
+        Helpline: +91 98450 12849 • Email: support@curalynx.com<br>
+        <span style="font-size: 10px; color: #94a3b8; display: block; margin-top: 6px;">
+          Confidentiality Notice: This medical record is intended solely for the patient named above.
+        </span>
+      </div>
     </div>
   </div>
 </body>

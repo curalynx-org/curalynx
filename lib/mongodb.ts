@@ -3,7 +3,8 @@ import dns from "dns";
 
 // Fix Node.js DNS SRV resolution issue on Windows / local networks for MongoDB Atlas
 try {
-  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+  dns.setDefaultResultOrder("ipv4first");
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1", "1.0.0.1"]);
 } catch (e) {
   // Ignore in environments where setServers is restricted
 }
