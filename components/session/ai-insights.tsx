@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { SessionControls } from "@/components/session/session-controls";
+import { PrescriptionModal } from "@/components/session/prescription-modal";
 
 export interface ClinicalItem {
   name: string;
@@ -123,6 +124,8 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
     item: ClinicalItem;
     type: "medicine" | "test";
   } | null>(null);
+
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
 
   // Structured Schedules map by medication name
   const [schedules, setSchedules] = useState<Record<string, MedicationSchedule>>({});
@@ -237,7 +240,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
           </div>
         </div>
 
-        <SessionControls />
+        <SessionControls
+          onGeneratePrescription={() => setShowPrescriptionModal(true)}
+        />
       </div>
 
       {/* Two Column Boxed Layout for Medications & Tests */}
@@ -894,62 +899,91 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
         </div>
       )}
 
-      {/* POPUP 2: Add / Remove Confirmation Popup (Clean Standard Sans-Serif Font) */}
+      {/* POPUP 2: Add / Remove Confirmation Popup (Prominent & Clear for Doctors) */}
       {notificationItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4 animate-in fade-in duration-150 font-sans">
-          <div className="bg-white border border-[#18181A]/20 rounded-[28px] p-6 max-w-sm w-full shadow-2xl text-center space-y-4 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 sm:p-6 animate-in fade-in duration-150 font-sans">
+          <div className="bg-[#FDFBF2] border border-[#18181A]/20 rounded-[32px] p-8 max-w-lg w-full shadow-2xl text-center space-y-5 animate-in zoom-in-95 duration-150">
+            {/* Status Icon */}
             <div
-              className={`h-12 w-12 rounded-full border flex items-center justify-center mx-auto ${
+              className={`h-16 w-16 rounded-3xl border flex items-center justify-center mx-auto shadow-xs ${
                 notificationItem.action === "added"
-                  ? "bg-[#E0F2FE] border-[#0284C7]/20 text-[#0B392A]"
+                  ? "bg-[#E0F2FE] border-[#0284C7]/30 text-[#0B392A]"
                   : "bg-red-50 border-red-200 text-red-600"
               }`}
             >
               {notificationItem.action === "added" ? (
-                <CheckCircle2 className="h-6 w-6" />
+                <CheckCircle2 className="h-8 w-8 text-[#0B392A]" />
               ) : (
-                <Trash2 className="h-6 w-6" />
+                <Trash2 className="h-8 w-8 text-red-600" />
               )}
             </div>
 
+            {/* Modal Heading */}
             <div>
-              <h3 className="text-base font-bold text-[#18181A] tracking-tight">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#18181A]/50 block mb-1">
+                {notificationItem.type === "medicine"
+                  ? "Prescription Order Update"
+                  : "Diagnostic Order Update"}
+              </span>
+              <h3 className="text-xl font-bold text-[#18181A] tracking-tight">
                 {notificationItem.action === "added"
-                  ? "Successfully Added!"
+                  ? "Successfully Added to Prescription!"
                   : "Removed from Orders"}
               </h3>
-              <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
-                <span className="font-bold text-[#18181A]">
-                  {notificationItem.item.name}
-                </span>{" "}
-                {notificationItem.dosage && (
-                  <span className="text-[#18181A] font-semibold block mt-1 bg-[#FDFBF2] py-1 px-2 rounded-lg border border-[#18181A]/10 text-[11px]">
-                    {notificationItem.dosage}
-                  </span>
-                )}
-                has been{" "}
-                {notificationItem.action === "added" ? "added to" : "removed from"}{" "}
-                the active{" "}
-                {notificationItem.type === "medicine"
-                  ? "prescription list"
-                  : "investigation orders"}
-                .
-              </p>
             </div>
 
-            <button
-              onClick={() => setNotificationItem(null)}
-              className={`w-full py-2.5 text-xs font-bold rounded-full shadow-xs transition-all cursor-pointer ${
-                notificationItem.action === "added"
-                  ? "text-white bg-[#0B392A] hover:bg-[#07241A]"
-                  : "text-[#18181A] bg-[#18181A]/10 hover:bg-[#18181A]/15"
-              }`}
-            >
-              Done
-            </button>
+            {/* Medicine & Dosage Details Card */}
+            <div className="bg-white border border-[#18181A]/15 rounded-2xl p-5 shadow-2xs space-y-3 text-left">
+              <div>
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#18181A]/50 block">
+                  {notificationItem.type === "medicine"
+                    ? "Medication"
+                    : "Diagnostic Test"}
+                </span>
+                <p className="text-base font-bold text-[#18181A] leading-snug">
+                  {notificationItem.item.name}
+                </p>
+              </div>
+
+              {notificationItem.dosage && (
+                <div className="pt-2 border-t border-[#18181A]/10">
+                  <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#18181A]/50 block mb-1">
+                    Prescribed Dosage & Schedule
+                  </span>
+                  <div className="p-3 rounded-xl bg-[#0B392A]/5 border border-[#0B392A]/15 text-[#0B392A] font-bold text-xs leading-relaxed">
+                    {notificationItem.dosage}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-1">
+              <button
+                onClick={() => setNotificationItem(null)}
+                className={`w-full py-3 text-sm font-bold rounded-full shadow-xs transition-all cursor-pointer ${
+                  notificationItem.action === "added"
+                    ? "text-white bg-[#0B392A] hover:bg-[#07241A] active:scale-98"
+                    : "text-[#18181A] bg-[#18181A]/10 hover:bg-[#18181A]/15 active:scale-98"
+                }`}
+              >
+                Done / Continue Consultation
+              </button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* POPUP 3: Official Clinical Prescription & PDF Export Modal */}
+      <PrescriptionModal
+        isOpen={showPrescriptionModal}
+        onClose={() => setShowPrescriptionModal(false)}
+        patientId={patientId}
+        medicines={medicines}
+        tests={tests}
+        addedItems={addedItems}
+        schedules={schedules}
+      />
     </div>
   );
 }
