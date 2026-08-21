@@ -8,8 +8,9 @@ import { useState } from "react";
 export default function LoginPage() {
   const router = useRouter();
   const [role, setRole] = useState<"provider" | "patient">("provider");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Defaulting to the seeded credentials so it automatically works!
+  const [email, setEmail] = useState("doctor@clinic.com");
+  const [password, setPassword] = useState("password123");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -119,7 +120,7 @@ export default function LoginPage() {
             />
             <div>
               <p className="font-bold text-[#FDFBF2]">
-                {role === "provider" ? "Dr. Sarah Chen" : "Emily Rodriguez"}
+                {role === "provider" ? "Dr. Aarav Desai" : "Emily Rodriguez"}
               </p>
               <p className="text-sm text-[#FDFBF2]/60">
                 {role === "provider" ? "Chief of Medicine, Oakland Clinic" : "Verified Patient"}
@@ -145,7 +146,7 @@ export default function LoginPage() {
           {/* Role Toggle */}
           <div className="flex items-center p-1 bg-[#18181A]/5 rounded-xl mb-10 w-fit mx-auto lg:mx-0">
             <button
-              onClick={() => { setRole("provider"); setError(""); }}
+              onClick={() => { setRole("provider"); setError(""); setEmail("doctor@clinic.com"); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                 role === "provider" 
                   ? "bg-[#FDFBF2] text-[#18181A] shadow-sm border border-[#18181A]/10" 
@@ -156,7 +157,7 @@ export default function LoginPage() {
               Provider
             </button>
             <button
-              onClick={() => { setRole("patient"); setError(""); }}
+              onClick={() => { setRole("patient"); setError(""); setEmail("aarushi@example.com"); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                 role === "patient" 
                   ? "bg-[#FDFBF2] text-[#18181A] shadow-sm border border-[#18181A]/10" 
