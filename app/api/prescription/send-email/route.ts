@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       patientHeight = "176",
       patientBmi = "23.24",
       patientBp = "120/80 mmHg",
-      patientEmail = "abhay.24305@knit.ac.in",
+      patientEmail = "uuu202331@gmail.com",
       doctorName = "Dr. Vivek Vardhan",
       doctorQual = "M.B.B.S., M.D. (Internal Medicine)",
       doctorReg = "MMC 2018 / KMC 84729",
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     } = body;
 
     // Hardcode recipient target as requested by user
-    const recipientEmail = "abhay.24305@knit.ac.in";
+    const recipientEmail = "uuu202331@gmail.com";
 
     const host = process.env.EMAIL_HOST || "email-smtp.us-east-1.amazonaws.com";
     const port = Number(process.env.EMAIL_PORT) || 587;
@@ -134,21 +134,20 @@ Central Support: +91 98450 12849
         ${docMode === "lab_order" ? "Ordered Diagnostic Investigations" : "Prescribed Pharmacotherapy (Rx)"}
       </h3>
 
-      ${
-        docMode === "lab_order"
-          ? `<table class="table">
+      ${docMode === "lab_order"
+        ? `<table class="table">
               <thead><tr><th>#</th><th>Investigation</th><th>Department</th><th>Priority</th></tr></thead>
               <tbody>
                 ${tests.map((t: any, i: number) => `<tr><td>${i + 1}</td><td><strong>${t.name}</strong></td><td>${t.category || "Pathology"}</td><td><span style="color:#0284c7;font-weight:bold;">${t.urgency || "Routine"}</span></td></tr>`).join("")}
               </tbody>
             </table>`
-          : `<table class="table">
+        : `<table class="table">
               <thead><tr><th>#</th><th>Medicine Name</th><th>Dosage Schedule</th><th>Duration</th></tr></thead>
               <tbody>
                 ${medicines.map((m: any, i: number) => {
-                  const sch = schedules[m.name] || { morning: 1, afternoon: 0, night: 1, food: "After Food", duration: "5 Days" };
-                  return `<tr><td>${i + 1}</td><td><strong>${m.name}</strong><br><span style="font-size:11px;color:#71717a;">${m.category || "Oral Therapeutic"}</span></td><td>${sch.morning}-${sch.afternoon}-${sch.night} (${sch.food})</td><td>${sch.duration}</td></tr>`;
-                }).join("")}
+          const sch = schedules[m.name] || { morning: 1, afternoon: 0, night: 1, food: "After Food", duration: "5 Days" };
+          return `<tr><td>${i + 1}</td><td><strong>${m.name}</strong><br><span style="font-size:11px;color:#71717a;">${m.category || "Oral Therapeutic"}</span></td><td>${sch.morning}-${sch.afternoon}-${sch.night} (${sch.food})</td><td>${sch.duration}</td></tr>`;
+        }).join("")}
               </tbody>
             </table>`
       }

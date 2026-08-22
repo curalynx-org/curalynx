@@ -95,7 +95,7 @@ export function PrescriptionModal({
           specialty: user.specialization || "Consultant Physician",
         });
       }
-    } catch {}
+    } catch { }
 
     if (patientId) {
       fetch(`/api/patients?patientId=${patientId}`)
@@ -115,7 +115,7 @@ export function PrescriptionModal({
             }));
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [patientId]);
 
@@ -158,7 +158,7 @@ export function PrescriptionModal({
           patientHeight: patientInfo.height,
           patientBmi: patientInfo.bmi,
           patientBp: patientInfo.bp,
-          patientEmail: "abhay.24305@knit.ac.in",
+          patientEmail: "uuu202331@gmail.com",
           doctorName: doctorInfo.name,
           doctorQual: doctorInfo.qualifications,
           doctorReg: doctorInfo.regNo,
@@ -272,21 +272,21 @@ BP: ${patientInfo.bp} | Wt: ${patientInfo.weight}kg
 
 R
 ${activeMedicines
-  .map((m, i) => {
-    const sch = schedules[m.name] || {
-      morning: 1,
-      afternoon: 0,
-      night: 1,
-      food: "After Food",
-      duration: "5 Days",
-    };
-    const timing = [];
-    if (sch.morning > 0) timing.push(`${sch.morning} Morning`);
-    if (sch.afternoon > 0) timing.push(`${sch.afternoon} Afternoon`);
-    if (sch.night > 0) timing.push(`${sch.night} Night`);
-    return `${i + 1}) ${m.name.toUpperCase()}\n   ${timing.join(", ")} (${sch.food}) - ${sch.duration}`;
-  })
-  .join("\n\n")}
+        .map((m, i) => {
+          const sch = schedules[m.name] || {
+            morning: 1,
+            afternoon: 0,
+            night: 1,
+            food: "After Food",
+            duration: "5 Days",
+          };
+          const timing = [];
+          if (sch.morning > 0) timing.push(`${sch.morning} Morning`);
+          if (sch.afternoon > 0) timing.push(`${sch.afternoon} Afternoon`);
+          if (sch.night > 0) timing.push(`${sch.night} Night`);
+          return `${i + 1}) ${m.name.toUpperCase()}\n   ${timing.join(", ")} (${sch.food}) - ${sch.duration}`;
+        })
+        .join("\n\n")}
 
 Advice:
 * TAKE ADEQUATE BED REST & HYDRATION
@@ -319,11 +319,10 @@ Follow Up: ${followUpStr}
             <div className="flex items-center bg-[#FDFBF2] p-1 rounded-2xl border border-[#18181A]/10">
               <button
                 onClick={() => setDocMode("rx")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  docMode === "rx"
-                    ? "bg-[#0B392A] text-white shadow-2xs"
-                    : "text-[#18181A]/70 hover:text-[#18181A]"
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${docMode === "rx"
+                  ? "bg-[#0B392A] text-white shadow-2xs"
+                  : "text-[#18181A]/70 hover:text-[#18181A]"
+                  }`}
               >
                 <FileText className="h-3.5 w-3.5" />
                 <span>Hospital Rx Letterhead</span>
@@ -331,11 +330,10 @@ Follow Up: ${followUpStr}
 
               <button
                 onClick={() => setDocMode("lab_order")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  docMode === "lab_order"
-                    ? "bg-[#0284C7] text-white shadow-2xs"
-                    : "text-[#18181A]/70 hover:text-[#18181A]"
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${docMode === "lab_order"
+                  ? "bg-[#0284C7] text-white shadow-2xs"
+                  : "text-[#18181A]/70 hover:text-[#18181A]"
+                  }`}
               >
                 <Activity className="h-3.5 w-3.5" />
                 <span>Diagnostic Lab Requisition</span>
@@ -353,14 +351,13 @@ Follow Up: ${followUpStr}
             <button
               onClick={sendEmailNotification}
               disabled={isSendingEmail}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-full transition-all cursor-pointer shadow-2xs ${
-                emailStatus === "sent"
-                  ? "bg-emerald-600 text-white"
-                  : emailStatus === "sending"
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-full transition-all cursor-pointer shadow-2xs ${emailStatus === "sent"
+                ? "bg-emerald-600 text-white"
+                : emailStatus === "sending"
                   ? "bg-amber-100 text-amber-900 border border-amber-300 animate-pulse"
                   : "bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100"
-              }`}
-              title="Email prescription directly to abhay.24305@knit.ac.in via Amazon SES"
+                }`}
+              title="Email prescription directly to uuu202331@gmail.com via Amazon SES"
             >
               {emailStatus === "sent" ? (
                 <>
@@ -707,7 +704,7 @@ Follow Up: ${followUpStr}
         <div className="px-6 py-4 border-t border-[#18181A]/10 bg-white flex flex-wrap items-center justify-between flex-shrink-0 gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#18181A]/60 font-medium">
-              {activeMedicines.length} Medication(s) • Recipient: <span className="font-mono font-bold text-black/80">abhay.24305@knit.ac.in</span>
+              {activeMedicines.length} Medication(s) • Recipient: <span className="font-mono font-bold text-black/80">uuu202331@gmail.com</span>
             </span>
             {emailStatus === "sent" && (
               <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
