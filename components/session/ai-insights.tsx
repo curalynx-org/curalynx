@@ -31,36 +31,193 @@ import { useRouter } from "next/navigation";
 import { SessionControls } from "@/components/session/session-controls";
 import { PrescriptionModal } from "@/components/session/prescription-modal";
 
-const MEDICINE_CATALOG: { name: string; category: string; dosage: string; reasoning: string }[] = [
-  { name: "Paracetamol 650mg", category: "Analgesic & Antipyretic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 3 Days", reasoning: "For symptomatic relief of fever, headache, and body aches." },
-  { name: "Amoxicillin + Clavulanic Acid 625mg", category: "Broad-Spectrum Antibiotic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 5 Days", reasoning: "Indicated for acute bacterial infections of upper/lower respiratory tract." },
-  { name: "Azithromycin 500mg", category: "Macrolide Antibiotic", dosage: "1 - 0 - 0 (Morning) • Before Food • 3 Days", reasoning: "Targeted macrolide therapy for respiratory and throat infections." },
-  { name: "Montelukast + Levocetirizine", category: "Anti-Allergic & Bronchodilator", dosage: "0 - 0 - 1 (Night) • After Food • 5 Days", reasoning: "Dual action for allergic rhinitis, nocturnal sneezing, and airway inflammation." },
-  { name: "Pantoprazole 40mg", category: "Proton Pump Inhibitor (PPI)", dosage: "1 - 0 - 0 (Morning) • Empty Stomach • 5 Days", reasoning: "Gastroprotection and suppression of gastric acid hypersecretion." },
-  { name: "Ibuprofen 400mg", category: "NSAID Analgesic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 3 Days", reasoning: "Anti-inflammatory and analgesic for acute muscular/joint pain." },
-  { name: "Cetirizine 10mg", category: "Second-Gen Antihistamine", dosage: "0 - 0 - 1 (Night) • After Food • 5 Days", reasoning: "Non-sedating antihistamine for urticaria, rhinitis, and itching." },
-  { name: "Dextromethorphan Syrup 100ml", category: "Cough Suppressant", dosage: "1 - 1 - 1 (TID) • After Food • 5 Days", reasoning: "Centrally acting antitussive for dry, non-productive irritating cough." },
-  { name: "Metformin 500mg", category: "Oral Antidiabetic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 30 Days", reasoning: "First-line biguanide for glycemic control and insulin sensitization." },
-  { name: "Telmisartan 40mg", category: "Antihypertensive (ARB)", dosage: "1 - 0 - 0 (Morning) • After Food • 30 Days", reasoning: "Angiotensin receptor blocker for essential hypertension control." },
-  { name: "Ondansetron 4mg", category: "Antiemetic (5-HT3 Antagonist)", dosage: "1 - 0 - 1 (PRN / SOS) • Before Food • 3 Days", reasoning: "Prevention and relief of nausea, retching, and acute vomiting." },
-  { name: "Cefixime 200mg", category: "Cephalosporin Antibiotic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 5 Days", reasoning: "Third-generation cephalosporin for uncomplicated respiratory and urinary infections." },
-  { name: "Doxycycline 100mg", category: "Tetracycline Antibiotic", dosage: "1 - 0 - 1 (Morning, Night) • After Food • 7 Days", reasoning: "Broad-spectrum antibacterial for atypical respiratory and skin infections." },
+const MEDICINE_CATALOG: {
+  name: string;
+  category: string;
+  dosage: string;
+  reasoning: string;
+}[] = [
+  {
+    name: "Paracetamol 650mg",
+    category: "Analgesic & Antipyretic",
+    dosage: "1 - 0 - 1 (Morning, Night) • After Food • 3 Days",
+    reasoning: "For symptomatic relief of fever, headache, and body aches.",
+  },
+  {
+    name: "Amoxicillin + Clavulanic Acid 625mg",
+    category: "Broad-Spectrum Antibiotic",
+    dosage: "1 - 0 - 1 (Morning, Night) • After Food • 5 Days",
+    reasoning:
+      "Indicated for acute bacterial infections of upper/lower respiratory tract.",
+  },
+  {
+    name: "Azithromycin 500mg",
+    category: "Macrolide Antibiotic",
+    dosage: "1 - 0 - 0 (Morning) • Before Food • 3 Days",
+    reasoning:
+      "Targeted macrolide therapy for respiratory and throat infections.",
+  },
+  {
+    name: "Montelukast + Levocetirizine",
+    category: "Anti-Allergic & Bronchodilator",
+    dosage: "0 - 0 - 1 (Night) • After Food • 5 Days",
+    reasoning:
+      "Dual action for allergic rhinitis, nocturnal sneezing, and airway inflammation.",
+  },
+  {
+    name: "Pantoprazole 40mg",
+    category: "Proton Pump Inhibitor (PPI)",
+    dosage: "1 - 0 - 0 (Morning) • Empty Stomach • 5 Days",
+    reasoning:
+      "Gastroprotection and suppression of gastric acid hypersecretion.",
+  },
+  {
+    name: "Ibuprofen 400mg",
+    category: "NSAID Analgesic",
+    dosage: "1 - 0 - 1 (Morning, Night) • After Food • 3 Days",
+    reasoning: "Anti-inflammatory and analgesic for acute muscular/joint pain.",
+  },
+  {
+    name: "Cetirizine 10mg",
+    category: "Second-Gen Antihistamine",
+    dosage: "0 - 0 - 1 (Night) • After Food • 5 Days",
+    reasoning:
+      "Non-sedating antihistamine for urticaria, rhinitis, and itching.",
+  },
+  {
+    name: "Dextromethorphan Syrup 100ml",
+    category: "Cough Suppressant",
+    dosage: "1 - 1 - 1 (TID) • After Food • 5 Days",
+    reasoning:
+      "Centrally acting antitussive for dry, non-productive irritating cough.",
+  },
+  {
+    name: "Metformin 500mg",
+    category: "Oral Antidiabetic",
+    dosage: "1 - 0 - 1 (Morning, Night) • After Food • 30 Days",
+    reasoning:
+      "First-line biguanide for glycemic control and insulin sensitization.",
+  },
+  {
+    name: "Telmisartan 40mg",
+    category: "Antihypertensive (ARB)",
+    dosage: "1 - 0 - 0 (Morning) • After Food • 30 Days",
+    reasoning:
+      "Angiotensin receptor blocker for essential hypertension control.",
+  },
+  {
+    name: "Ondansetron 4mg",
+    category: "Antiemetic (5-HT3 Antagonist)",
+    dosage: "1 - 0 - 1 (PRN / SOS) • Before Food • 3 Days",
+    reasoning: "Prevention and relief of nausea, retching, and acute vomiting.",
+  },
+  {
+    name: "Cefixime 200mg",
+    category: "Cephalosporin Antibiotic",
+    dosage: "1 - 0 - 1 (Morning, Night) • After Food • 5 Days",
+    reasoning:
+      "Third-generation cephalosporin for uncomplicated respiratory and urinary infections.",
+  },
+  {
+    name: "Doxycycline 100mg",
+    category: "Tetracycline Antibiotic",
+    dosage: "1 - 0 - 1 (Morning, Night) • After Food • 7 Days",
+    reasoning:
+      "Broad-spectrum antibacterial for atypical respiratory and skin infections.",
+  },
 ];
 
-const TEST_CATALOG: { name: string; category: string; urgency: string; reasoning: string }[] = [
-  { name: "Complete Blood Count (CBC) with Differential", category: "Hematology", urgency: "Routine", reasoning: "Evaluates red blood cells, leukocytes, absolute eosinophil count, and platelets." },
-  { name: "Fasting Blood Sugar (FBS) & HbA1c", category: "Biochemistry", urgency: "Routine", reasoning: "Diagnostic assessment of glycemic baseline and 3-month glycemic control." },
-  { name: "Lipid Profile Panel (Total, LDL, HDL, Triglycerides)", category: "Cardiometabolic", urgency: "Routine", reasoning: "Atherosclerotic cardiovascular risk stratification." },
-  { name: "Liver Function Tests (LFT - SGOT, SGPT, Bilirubin)", category: "Hepatic Panel", urgency: "Routine", reasoning: "Screening of hepatic enzymes and hepatocellular function." },
-  { name: "Kidney Function Tests (KFT - Urea, Creatinine, eGFR)", category: "Renal Panel", urgency: "Routine", reasoning: "Quantitative renal filtration and excretory capacity assessment." },
-  { name: "Thyroid Profile (Total T3, Total T4, TSH)", category: "Endocrinology", urgency: "Routine", reasoning: "Evaluation of thyroid gland activity and metabolic regulation." },
-  { name: "Digital Chest X-Ray (PA View)", category: "Radiology", urgency: "Urgent", reasoning: "Screening for pulmonary consolidation, pneumonia, infiltration, and cardiomegaly." },
-  { name: "12-Lead Electrocardiogram (ECG)", category: "Cardiology", urgency: "Urgent", reasoning: "Assesses cardiac rhythm, conduction abnormalities, and ischemic changes." },
-  { name: "Urine Routine & Microscopic Examination", category: "Clinical Pathology", urgency: "Routine", reasoning: "Detects proteinuria, hematuria, leukocyturia, and crystals." },
-  { name: "Serum Electrolytes (Sodium, Potassium, Chloride)", category: "Biochemistry", urgency: "Urgent", reasoning: "Monitors fluid and electrolyte equilibrium." },
-  { name: "Dengue NS1 Antigen & IgM/IgG Serology", category: "Virology", urgency: "Stat", reasoning: "Rapid diagnostic confirmation for acute febrile dengue virus infection." },
-  { name: "Serum Ferritin & Iron Studies", category: "Hematology", urgency: "Routine", reasoning: "Identifies iron deficiency anemia and reticuloendothelial iron stores." },
-  { name: "Total Serum IgE & Inhalant Allergen Panel", category: "Immunology", urgency: "Routine", reasoning: "Quantifies allergic sensitization and atopic hyperreactivity." },
+const TEST_CATALOG: {
+  name: string;
+  category: string;
+  urgency: string;
+  reasoning: string;
+}[] = [
+  {
+    name: "Complete Blood Count (CBC) with Differential",
+    category: "Hematology",
+    urgency: "Routine",
+    reasoning:
+      "Evaluates red blood cells, leukocytes, absolute eosinophil count, and platelets.",
+  },
+  {
+    name: "Fasting Blood Sugar (FBS) & HbA1c",
+    category: "Biochemistry",
+    urgency: "Routine",
+    reasoning:
+      "Diagnostic assessment of glycemic baseline and 3-month glycemic control.",
+  },
+  {
+    name: "Lipid Profile Panel (Total, LDL, HDL, Triglycerides)",
+    category: "Cardiometabolic",
+    urgency: "Routine",
+    reasoning: "Atherosclerotic cardiovascular risk stratification.",
+  },
+  {
+    name: "Liver Function Tests (LFT - SGOT, SGPT, Bilirubin)",
+    category: "Hepatic Panel",
+    urgency: "Routine",
+    reasoning: "Screening of hepatic enzymes and hepatocellular function.",
+  },
+  {
+    name: "Kidney Function Tests (KFT - Urea, Creatinine, eGFR)",
+    category: "Renal Panel",
+    urgency: "Routine",
+    reasoning:
+      "Quantitative renal filtration and excretory capacity assessment.",
+  },
+  {
+    name: "Thyroid Profile (Total T3, Total T4, TSH)",
+    category: "Endocrinology",
+    urgency: "Routine",
+    reasoning: "Evaluation of thyroid gland activity and metabolic regulation.",
+  },
+  {
+    name: "Digital Chest X-Ray (PA View)",
+    category: "Radiology",
+    urgency: "Urgent",
+    reasoning:
+      "Screening for pulmonary consolidation, pneumonia, infiltration, and cardiomegaly.",
+  },
+  {
+    name: "12-Lead Electrocardiogram (ECG)",
+    category: "Cardiology",
+    urgency: "Urgent",
+    reasoning:
+      "Assesses cardiac rhythm, conduction abnormalities, and ischemic changes.",
+  },
+  {
+    name: "Urine Routine & Microscopic Examination",
+    category: "Clinical Pathology",
+    urgency: "Routine",
+    reasoning: "Detects proteinuria, hematuria, leukocyturia, and crystals.",
+  },
+  {
+    name: "Serum Electrolytes (Sodium, Potassium, Chloride)",
+    category: "Biochemistry",
+    urgency: "Urgent",
+    reasoning: "Monitors fluid and electrolyte equilibrium.",
+  },
+  {
+    name: "Dengue NS1 Antigen & IgM/IgG Serology",
+    category: "Virology",
+    urgency: "Stat",
+    reasoning:
+      "Rapid diagnostic confirmation for acute febrile dengue virus infection.",
+  },
+  {
+    name: "Serum Ferritin & Iron Studies",
+    category: "Hematology",
+    urgency: "Routine",
+    reasoning:
+      "Identifies iron deficiency anemia and reticuloendothelial iron stores.",
+  },
+  {
+    name: "Total Serum IgE & Inhalant Allergen Panel",
+    category: "Immunology",
+    urgency: "Routine",
+    reasoning: "Quantifies allergic sensitization and atopic hyperreactivity.",
+  },
 ];
 
 export interface ClinicalItem {
@@ -100,9 +257,12 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
         dosage: "1 - 0 - 1 (Morning, Night) • After Food • 5 Days",
         category: "Pharmacotherapy",
         confidence: 95,
-        conversation_evidence: "Patient reported active symptoms during the live consultation dialogue.",
-        history_evidence: "No contraindications, adverse reactions, or drug-drug interactions in patient history.",
-        reports_evidence: "Correlates with baseline laboratory parameters and vital signs tracking.",
+        conversation_evidence:
+          "Patient reported active symptoms during the live consultation dialogue.",
+        history_evidence:
+          "No contraindications, adverse reactions, or drug-drug interactions in patient history.",
+        reports_evidence:
+          "Correlates with baseline laboratory parameters and vital signs tracking.",
         reasoning: `Recommended for symptom relief and clinical management based on patient presentation.`,
       };
     }
@@ -133,9 +293,12 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
         name: t,
         urgency: "Routine",
         confidence: 94,
-        conversation_evidence: "Clinical findings and symptoms presented during consultation.",
-        history_evidence: "Assesses patient history risk factors and excludes differential diagnoses.",
-        reports_evidence: "Establishes quantitative diagnostic baseline for WBC, metabolic, and inflammatory markers.",
+        conversation_evidence:
+          "Clinical findings and symptoms presented during consultation.",
+        history_evidence:
+          "Assesses patient history risk factors and excludes differential diagnoses.",
+        reports_evidence:
+          "Establishes quantitative diagnostic baseline for WBC, metabolic, and inflammatory markers.",
         reasoning: `Diagnostic investigation recommended to confirm clinical findings and guide medical management.`,
       };
     }
@@ -165,8 +328,11 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   } | null>(null);
 
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
-  const [prescriptionDocMode, setPrescriptionDocMode] = useState<"rx" | "lab_order">("rx");
-  const [showPreGenerationConfirmation, setShowPreGenerationConfirmation] = useState(false);
+  const [prescriptionDocMode, setPrescriptionDocMode] = useState<
+    "rx" | "lab_order"
+  >("rx");
+  const [showPreGenerationConfirmation, setShowPreGenerationConfirmation] =
+    useState(false);
   const [showEndSessionModal, setShowEndSessionModal] = useState(false);
   const [showSkipPatientModal, setShowSkipPatientModal] = useState(false);
   const [showEmptyWarningModal, setShowEmptyWarningModal] = useState(false);
@@ -178,7 +344,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   const [testSearch, setTestSearch] = useState("");
 
   // Structured Schedules map by medication name
-  const [schedules, setSchedules] = useState<Record<string, MedicationSchedule>>({});
+  const [schedules, setSchedules] = useState<
+    Record<string, MedicationSchedule>
+  >({});
 
   const [notificationItem, setNotificationItem] = useState<{
     item: ClinicalItem;
@@ -193,56 +361,68 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   const allMedicines: ClinicalItem[] = [
     ...medicines,
     ...customMedicines.filter(
-      (cm) => !medicines.some((m) => m.name.toLowerCase() === cm.name.toLowerCase())
+      (cm) =>
+        !medicines.some((m) => m.name.toLowerCase() === cm.name.toLowerCase()),
     ),
   ];
 
   const allTests: ClinicalItem[] = [
     ...tests,
     ...customTests.filter(
-      (ct) => !tests.some((t) => t.name.toLowerCase() === ct.name.toLowerCase())
+      (ct) =>
+        !tests.some((t) => t.name.toLowerCase() === ct.name.toLowerCase()),
     ),
   ];
 
-  const filteredMedicines = allMedicines.filter((m) =>
-    m.name.toLowerCase().includes(medSearch.toLowerCase()) ||
-    (m.category && m.category.toLowerCase().includes(medSearch.toLowerCase()))
+  const filteredMedicines = allMedicines.filter(
+    (m) =>
+      m.name.toLowerCase().includes(medSearch.toLowerCase()) ||
+      (m.category &&
+        m.category.toLowerCase().includes(medSearch.toLowerCase())),
   );
 
-  const filteredTests = allTests.filter((t) =>
-    t.name.toLowerCase().includes(testSearch.toLowerCase()) ||
-    (t.category && t.category.toLowerCase().includes(testSearch.toLowerCase()))
+  const filteredTests = allTests.filter(
+    (t) =>
+      t.name.toLowerCase().includes(testSearch.toLowerCase()) ||
+      (t.category &&
+        t.category.toLowerCase().includes(testSearch.toLowerCase())),
   );
 
   // Live suggestions from catalog
-  const medSuggestions = medSearch.trim().length > 0
-    ? MEDICINE_CATALOG.filter(
-        (cat) =>
-          cat.name.toLowerCase().includes(medSearch.toLowerCase()) ||
-          cat.category.toLowerCase().includes(medSearch.toLowerCase())
-      ).slice(0, 4)
-    : [];
+  const medSuggestions =
+    medSearch.trim().length > 0
+      ? MEDICINE_CATALOG.filter(
+          (cat) =>
+            cat.name.toLowerCase().includes(medSearch.toLowerCase()) ||
+            cat.category.toLowerCase().includes(medSearch.toLowerCase()),
+        ).slice(0, 4)
+      : [];
 
-  const testSuggestions = testSearch.trim().length > 0
-    ? TEST_CATALOG.filter(
-        (cat) =>
-          cat.name.toLowerCase().includes(testSearch.toLowerCase()) ||
-          cat.category.toLowerCase().includes(testSearch.toLowerCase())
-      ).slice(0, 4)
-    : [];
+  const testSuggestions =
+    testSearch.trim().length > 0
+      ? TEST_CATALOG.filter(
+          (cat) =>
+            cat.name.toLowerCase().includes(testSearch.toLowerCase()) ||
+            cat.category.toLowerCase().includes(testSearch.toLowerCase()),
+        ).slice(0, 4)
+      : [];
 
-  const handleAddCustomMed = (cat: typeof MEDICINE_CATALOG[0]) => {
+  const handleAddCustomMed = (cat: (typeof MEDICINE_CATALOG)[0]) => {
     const newItem: ClinicalItem = {
       name: cat.name,
       category: cat.category,
       dosage: cat.dosage,
       confidence: 96,
-      conversation_evidence: "Added directly by physician during clinical session search.",
-      history_evidence: "Verified with patient drug allergy & tolerance profile.",
+      conversation_evidence:
+        "Added directly by physician during clinical session search.",
+      history_evidence:
+        "Verified with patient drug allergy & tolerance profile.",
       reports_evidence: "Standard clinical therapeutic formulation.",
       reasoning: cat.reasoning,
     };
-    if (!allMedicines.some((m) => m.name.toLowerCase() === cat.name.toLowerCase())) {
+    if (
+      !allMedicines.some((m) => m.name.toLowerCase() === cat.name.toLowerCase())
+    ) {
       setCustomMedicines((prev) => [...prev, newItem]);
     }
     setMedSearch("");
@@ -250,18 +430,22 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
     setSelectedItem({ item: newItem, type: "medicine" });
   };
 
-  const handleAddCustomTest = (cat: typeof TEST_CATALOG[0]) => {
+  const handleAddCustomTest = (cat: (typeof TEST_CATALOG)[0]) => {
     const newItem: ClinicalItem = {
       name: cat.name,
       category: cat.category,
       urgency: cat.urgency,
       confidence: 95,
-      conversation_evidence: "Investigation ordered directly by physician during clinical search.",
-      history_evidence: "Indicated to evaluate quantitative diagnostic parameters.",
+      conversation_evidence:
+        "Investigation ordered directly by physician during clinical search.",
+      history_evidence:
+        "Indicated to evaluate quantitative diagnostic parameters.",
       reports_evidence: "Standard clinical diagnostic panel.",
       reasoning: cat.reasoning,
     };
-    if (!allTests.some((t) => t.name.toLowerCase() === cat.name.toLowerCase())) {
+    if (
+      !allTests.some((t) => t.name.toLowerCase() === cat.name.toLowerCase())
+    ) {
       setCustomTests((prev) => [...prev, newItem]);
     }
     setTestSearch("");
@@ -294,10 +478,16 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   const formatScheduleString = (sch: MedicationSchedule): string => {
     const pattern = `${sch.morning} - ${sch.afternoon} - ${sch.night}`;
     const times: string[] = [];
-    if (sch.morning > 0) times.push(`Morning: ${sch.morning} Tab${sch.morning > 1 ? "s" : ""}`);
-    if (sch.afternoon > 0) times.push(`Afternoon: ${sch.afternoon} Tab${sch.afternoon > 1 ? "s" : ""}`);
-    if (sch.night > 0) times.push(`Night: ${sch.night} Tab${sch.night > 1 ? "s" : ""}`);
-    const timeLabel = times.length > 0 ? ` (${times.join(", ")})` : " (SOS / When Needed)";
+    if (sch.morning > 0)
+      times.push(`Morning: ${sch.morning} Tab${sch.morning > 1 ? "s" : ""}`);
+    if (sch.afternoon > 0)
+      times.push(
+        `Afternoon: ${sch.afternoon} Tab${sch.afternoon > 1 ? "s" : ""}`,
+      );
+    if (sch.night > 0)
+      times.push(`Night: ${sch.night} Tab${sch.night > 1 ? "s" : ""}`);
+    const timeLabel =
+      times.length > 0 ? ` (${times.join(", ")})` : " (SOS / When Needed)";
     return `${pattern}${timeLabel} • ${sch.food} • ${sch.duration}`;
   };
 
@@ -330,7 +520,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   const updateSlotQuantity = (
     medName: string,
     slot: "morning" | "afternoon" | "night",
-    delta: number
+    delta: number,
   ) => {
     const current = getSchedule(medName);
     const newQty = Math.max(0, Math.min(5, (current[slot] || 0) + delta));
@@ -346,7 +536,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
   const setSlotQuantity = (
     medName: string,
     slot: "morning" | "afternoon" | "night",
-    qty: number
+    qty: number,
   ) => {
     const current = getSchedule(medName);
     setSchedules((prev) => ({
@@ -358,15 +548,21 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
     }));
   };
 
-  const currentSchedule = selectedItem ? getSchedule(selectedItem.item.name) : null;
+  const currentSchedule = selectedItem
+    ? getSchedule(selectedItem.item.name)
+    : null;
 
   return (
-    <div className="flex flex-col h-full bg-transparent overflow-hidden relative font-sans">
+    <div className="relative flex min-h-0 flex-col overflow-visible bg-transparent font-sans lg:h-full lg:overflow-hidden">
       {/* Same Line Header: Cura AI on Left, Session Controls on Right */}
-      <div className="flex items-center justify-between pb-5 flex-shrink-0">
+      <div className="flex flex-col gap-3 pb-4 sm:flex-row sm:items-center sm:justify-between lg:pb-5">
         <div className="flex items-center gap-3.5">
           <div className="h-14 w-14 rounded-2xl bg-white border border-[#18181A]/15 p-1 flex items-center justify-center shadow-xs shrink-0">
-            <img src="/curalynx-logo.png" alt="Cura AI" className="h-full w-full object-contain scale-105" />
+            <img
+              src="/curalynx-logo.png"
+              alt="Cura AI"
+              className="h-full w-full object-contain scale-105"
+            />
           </div>
           <div>
             <h2 className="text-2xl font-serif text-[#18181A]">Cura AI</h2>
@@ -388,9 +584,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
       </div>
 
       {/* Two Column Boxed Layout for Medications & Tests */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-5 pb-2">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-visible pb-2 lg:grid-cols-2 lg:gap-5 lg:overflow-hidden">
         {/* Suggested Medications Box */}
-        <div className="flex flex-col h-full min-h-0 bg-[#FDFBF2] border border-[#18181A]/20 rounded-[28px] p-5 shadow-sm overflow-hidden">
+        <div className="flex min-h-[360px] flex-col overflow-hidden rounded-2xl border border-[#18181A]/20 bg-[#FDFBF2] p-3 shadow-sm sm:p-5 lg:h-full lg:min-h-0 lg:rounded-[28px]">
           {/* Box Header */}
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#18181A]/10 flex-shrink-0">
             <div className="flex items-center gap-2.5">
@@ -413,7 +609,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
               type="text"
               value={medSearch}
               onChange={(e) => setMedSearch(e.target.value)}
-              placeholder="Search or add medication (e.g. Paracetamol, Amoxicillin)..."
+              placeholder="Search medications..."
               className="w-full pl-8.5 pr-8 py-2 text-xs bg-white border border-[#18181A]/15 rounded-xl text-[#18181A] placeholder:text-[#18181A]/40 focus:outline-none focus:ring-2 focus:ring-[#0B392A]/20 focus:border-[#0B392A]"
             />
             {medSearch && (
@@ -427,7 +623,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
 
             {/* Suggestions Dropdown from Catalog */}
             {medSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white border border-[#18181A]/15 rounded-2xl shadow-lg p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-[45vh] space-y-1 overflow-y-auto rounded-2xl border border-[#18181A]/15 bg-white p-2 shadow-lg animate-in fade-in zoom-in-95 duration-100">
                 <div className="text-[10px] font-bold text-[#18181A]/50 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
                   <span>Clinical Catalog Suggestions</span>
                   <span className="text-purple-700">Click + to add</span>
@@ -439,8 +635,12 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                     className="flex items-center justify-between p-2 rounded-xl hover:bg-[#FDFBF2] border border-transparent hover:border-[#18181A]/10 cursor-pointer transition-colors"
                   >
                     <div className="min-w-0 flex-1 pr-2">
-                      <p className="text-xs font-bold text-[#18181A] truncate">{cat.name}</p>
-                      <p className="text-[10.5px] text-[#18181A]/50 truncate">{cat.category} • {cat.dosage}</p>
+                      <p className="text-xs font-bold text-[#18181A] truncate">
+                        {cat.name}
+                      </p>
+                      <p className="text-[10.5px] text-[#18181A]/50 truncate">
+                        {cat.category} • {cat.dosage}
+                      </p>
                     </div>
                     <button
                       onClick={(e) => {
@@ -475,7 +675,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 return (
                   <div
                     key={i}
-                    onClick={() => setSelectedItem({ item: med, type: "medicine" })}
+                    onClick={() =>
+                      setSelectedItem({ item: med, type: "medicine" })
+                    }
                     className="group bg-white border border-[#18181A]/15 hover:border-[#18181A]/40 p-4 rounded-[20px] shadow-2xs relative overflow-hidden transition-all cursor-pointer hover:shadow-sm"
                   >
                     <div className="flex justify-between items-start mb-1.5">
@@ -538,7 +740,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
         </div>
 
         {/* Recommended Tests Box */}
-        <div className="flex flex-col h-full min-h-0 bg-[#FDFBF2] border border-[#18181A]/20 rounded-[28px] p-5 shadow-sm overflow-hidden">
+        <div className="flex min-h-[360px] flex-col overflow-hidden rounded-2xl border border-[#18181A]/20 bg-[#FDFBF2] p-3 shadow-sm sm:p-5 lg:h-full lg:min-h-0 lg:rounded-[28px]">
           {/* Box Header */}
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#18181A]/10 flex-shrink-0">
             <div className="flex items-center gap-2.5">
@@ -561,7 +763,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
               type="text"
               value={testSearch}
               onChange={(e) => setTestSearch(e.target.value)}
-              placeholder="Search or add diagnostic tests (e.g. CBC, Lipid, X-Ray)..."
+              placeholder="Search tests..."
               className="w-full pl-8.5 pr-8 py-2 text-xs bg-white border border-[#18181A]/15 rounded-xl text-[#18181A] placeholder:text-[#18181A]/40 focus:outline-none focus:ring-2 focus:ring-[#0B392A]/20 focus:border-[#0B392A]"
             />
             {testSearch && (
@@ -575,7 +777,7 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
 
             {/* Suggestions Dropdown from Catalog */}
             {testSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white border border-[#18181A]/15 rounded-2xl shadow-lg p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-[45vh] space-y-1 overflow-y-auto rounded-2xl border border-[#18181A]/15 bg-white p-2 shadow-lg animate-in fade-in zoom-in-95 duration-100">
                 <div className="text-[10px] font-bold text-[#18181A]/50 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
                   <span>Diagnostic Catalog Suggestions</span>
                   <span className="text-blue-700">Click + to add</span>
@@ -587,8 +789,12 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                     className="flex items-center justify-between p-2 rounded-xl hover:bg-[#FDFBF2] border border-transparent hover:border-[#18181A]/10 cursor-pointer transition-colors"
                   >
                     <div className="min-w-0 flex-1 pr-2">
-                      <p className="text-xs font-bold text-[#18181A] truncate">{cat.name}</p>
-                      <p className="text-[10.5px] text-[#18181A]/50 truncate">{cat.category} • Priority: {cat.urgency}</p>
+                      <p className="text-xs font-bold text-[#18181A] truncate">
+                        {cat.name}
+                      </p>
+                      <p className="text-[10.5px] text-[#18181A]/50 truncate">
+                        {cat.category} • Priority: {cat.urgency}
+                      </p>
                     </div>
                     <button
                       onClick={(e) => {
@@ -622,7 +828,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 return (
                   <div
                     key={i}
-                    onClick={() => setSelectedItem({ item: test, type: "test" })}
+                    onClick={() =>
+                      setSelectedItem({ item: test, type: "test" })
+                    }
                     className="group bg-white border border-[#18181A]/15 hover:border-[#18181A]/40 p-4 rounded-[20px] shadow-2xs relative overflow-hidden transition-all cursor-pointer hover:shadow-sm"
                   >
                     <div className="flex justify-between items-start mb-2">
@@ -829,10 +1037,12 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                     <div className="bg-white border border-[#18181A]/10 p-4 rounded-2xl shadow-2xs space-y-3.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold text-[#18181A] uppercase tracking-wider flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5 text-[#7E22CE]" /> Tablet Quantities & Timing
+                          <Clock className="h-3.5 w-3.5 text-[#7E22CE]" />{" "}
+                          Tablet Quantities & Timing
                         </span>
                         <span className="text-[11px] font-bold text-[#7E22CE] bg-[#F3E8FF] px-2.5 py-0.5 rounded-full">
-                          {currentSchedule.morning} - {currentSchedule.afternoon} - {currentSchedule.night}
+                          {currentSchedule.morning} -{" "}
+                          {currentSchedule.afternoon} - {currentSchedule.night}
                         </span>
                       </div>
 
@@ -848,14 +1058,20 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                         >
                           <div className="flex items-center gap-1">
                             <Sun className="h-3.5 w-3.5" />
-                            <span className="text-[11px] font-bold">Morning</span>
+                            <span className="text-[11px] font-bold">
+                              Morning
+                            </span>
                           </div>
 
                           <div className="flex items-center justify-between w-full px-1">
                             <button
                               type="button"
                               onClick={() =>
-                                updateSlotQuantity(selectedItem.item.name, "morning", -1)
+                                updateSlotQuantity(
+                                  selectedItem.item.name,
+                                  "morning",
+                                  -1,
+                                )
                               }
                               className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
                                 currentSchedule.morning > 0
@@ -873,7 +1089,11 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                             <button
                               type="button"
                               onClick={() =>
-                                updateSlotQuantity(selectedItem.item.name, "morning", 1)
+                                updateSlotQuantity(
+                                  selectedItem.item.name,
+                                  "morning",
+                                  1,
+                                )
                               }
                               className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
                                 currentSchedule.morning > 0
@@ -904,14 +1124,20 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                         >
                           <div className="flex items-center gap-1">
                             <SunMedium className="h-3.5 w-3.5" />
-                            <span className="text-[11px] font-bold">Afternoon</span>
+                            <span className="text-[11px] font-bold">
+                              Afternoon
+                            </span>
                           </div>
 
                           <div className="flex items-center justify-between w-full px-1">
                             <button
                               type="button"
                               onClick={() =>
-                                updateSlotQuantity(selectedItem.item.name, "afternoon", -1)
+                                updateSlotQuantity(
+                                  selectedItem.item.name,
+                                  "afternoon",
+                                  -1,
+                                )
                               }
                               className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
                                 currentSchedule.afternoon > 0
@@ -929,7 +1155,11 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                             <button
                               type="button"
                               onClick={() =>
-                                updateSlotQuantity(selectedItem.item.name, "afternoon", 1)
+                                updateSlotQuantity(
+                                  selectedItem.item.name,
+                                  "afternoon",
+                                  1,
+                                )
                               }
                               className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
                                 currentSchedule.afternoon > 0
@@ -967,7 +1197,11 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                             <button
                               type="button"
                               onClick={() =>
-                                updateSlotQuantity(selectedItem.item.name, "night", -1)
+                                updateSlotQuantity(
+                                  selectedItem.item.name,
+                                  "night",
+                                  -1,
+                                )
                               }
                               className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
                                 currentSchedule.night > 0
@@ -985,7 +1219,11 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                             <button
                               type="button"
                               onClick={() =>
-                                updateSlotQuantity(selectedItem.item.name, "night", 1)
+                                updateSlotQuantity(
+                                  selectedItem.item.name,
+                                  "night",
+                                  1,
+                                )
                               }
                               className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${
                                 currentSchedule.night > 0
@@ -1013,30 +1251,35 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                           <Utensils className="h-3 w-3" /> Food Instructions
                         </span>
                         <div className="grid grid-cols-2 gap-1.5">
-                          {(["After Food", "Before Food", "Empty Stomach", "With Food"] as const).map(
-                            (foodOpt) => (
-                              <button
-                                key={foodOpt}
-                                type="button"
-                                onClick={() => {
-                                  setSchedules((prev) => ({
-                                    ...prev,
-                                    [selectedItem.item.name]: {
-                                      ...currentSchedule,
-                                      food: foodOpt,
-                                    },
-                                  }));
-                                }}
-                                className={`text-[10.5px] font-bold py-1.5 px-2 rounded-lg border text-center transition-all cursor-pointer ${
-                                  currentSchedule.food === foodOpt
-                                    ? "bg-[#E9D5FF] text-[#18181A] border-[#18181A]"
-                                    : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15 hover:bg-[#18181A]/5"
-                                }`}
-                              >
-                                {foodOpt}
-                              </button>
-                            )
-                          )}
+                          {(
+                            [
+                              "After Food",
+                              "Before Food",
+                              "Empty Stomach",
+                              "With Food",
+                            ] as const
+                          ).map((foodOpt) => (
+                            <button
+                              key={foodOpt}
+                              type="button"
+                              onClick={() => {
+                                setSchedules((prev) => ({
+                                  ...prev,
+                                  [selectedItem.item.name]: {
+                                    ...currentSchedule,
+                                    food: foodOpt,
+                                  },
+                                }));
+                              }}
+                              className={`text-[10.5px] font-bold py-1.5 px-2 rounded-lg border text-center transition-all cursor-pointer ${
+                                currentSchedule.food === foodOpt
+                                  ? "bg-[#E9D5FF] text-[#18181A] border-[#18181A]"
+                                  : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15 hover:bg-[#18181A]/5"
+                              }`}
+                            >
+                              {foodOpt}
+                            </button>
+                          ))}
                         </div>
                       </div>
 
@@ -1046,30 +1289,35 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                           <Calendar className="h-3 w-3" /> Duration
                         </span>
                         <div className="flex flex-wrap gap-1.5">
-                          {["3 Days", "5 Days", "7 Days", "10 Days", "14 Days", "SOS (PRN)"].map(
-                            (dur) => (
-                              <button
-                                key={dur}
-                                type="button"
-                                onClick={() => {
-                                  setSchedules((prev) => ({
-                                    ...prev,
-                                    [selectedItem.item.name]: {
-                                      ...currentSchedule,
-                                      duration: dur,
-                                    },
-                                  }));
-                                }}
-                                className={`text-[10.5px] font-bold py-1 px-2.5 rounded-lg border transition-all cursor-pointer ${
-                                  currentSchedule.duration === dur
-                                    ? "bg-[#0B392A] text-white border-[#0B392A]"
-                                    : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15 hover:bg-[#18181A]/5"
-                                }`}
-                              >
-                                {dur}
-                              </button>
-                            )
-                          )}
+                          {[
+                            "3 Days",
+                            "5 Days",
+                            "7 Days",
+                            "10 Days",
+                            "14 Days",
+                            "SOS (PRN)",
+                          ].map((dur) => (
+                            <button
+                              key={dur}
+                              type="button"
+                              onClick={() => {
+                                setSchedules((prev) => ({
+                                  ...prev,
+                                  [selectedItem.item.name]: {
+                                    ...currentSchedule,
+                                    duration: dur,
+                                  },
+                                }));
+                              }}
+                              className={`text-[10.5px] font-bold py-1 px-2.5 rounded-lg border transition-all cursor-pointer ${
+                                currentSchedule.duration === dur
+                                  ? "bg-[#0B392A] text-white border-[#0B392A]"
+                                  : "bg-[#FDFBF2] text-[#18181A]/60 border-[#18181A]/15 hover:bg-[#18181A]/5"
+                              }`}
+                            >
+                              {dur}
+                            </button>
+                          ))}
                         </div>
                       </div>
 
@@ -1087,10 +1335,12 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                         Lab Order Instruction
                       </span>
                       <p className="text-xs text-[#18181A]/80 leading-relaxed">
-                        Diagnostic panel ordered to screen clinical findings and assess inflammatory markers.
+                        Diagnostic panel ordered to screen clinical findings and
+                        assess inflammatory markers.
                       </p>
                       <div className="p-2.5 rounded-xl bg-[#FDFBF2] border border-[#18181A]/10 text-[11px] font-bold text-[#18181A]">
-                        Priority: {selectedItem.item.urgency || "Standard Lab Panel"}
+                        Priority:{" "}
+                        {selectedItem.item.urgency || "Standard Lab Panel"}
                       </div>
                     </div>
                   )}
@@ -1116,7 +1366,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 <div className="pt-2 flex flex-col gap-2">
                   {addedItems[selectedItem.item.name] ? (
                     <button
-                      onClick={() => handleToggle(selectedItem.item, selectedItem.type)}
+                      onClick={() =>
+                        handleToggle(selectedItem.item, selectedItem.type)
+                      }
                       className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 rounded-full shadow-2xs transition-all active:scale-95 cursor-pointer"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -1126,7 +1378,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                     </button>
                   ) : (
                     <button
-                      onClick={() => handleToggle(selectedItem.item, selectedItem.type)}
+                      onClick={() =>
+                        handleToggle(selectedItem.item, selectedItem.type)
+                      }
                       className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#18181A] bg-[#E9D5FF] hover:bg-[#D8B4FE] border border-[#18181A] rounded-full shadow-2xs transition-all active:scale-95 cursor-pointer"
                     >
                       <Plus className="h-3.5 w-3.5" />
@@ -1239,7 +1493,8 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                     Review Prescription & Diagnostic Orders
                   </h3>
                   <p className="text-xs text-[#18181A]/60 font-medium">
-                    Step 1 of 2: Verify selected items before generating official letterhead
+                    Step 1 of 2: Verify selected items before generating
+                    official letterhead
                   </p>
                 </div>
               </div>
@@ -1258,7 +1513,8 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-[#18181A]/70 uppercase tracking-wider flex items-center gap-1.5">
-                    <Pill className="h-3.5 w-3.5 text-purple-700" /> Prescribed Medications (
+                    <Pill className="h-3.5 w-3.5 text-purple-700" /> Prescribed
+                    Medications (
                     {allMedicines.filter((m) => addedItems[m.name]).length})
                   </span>
                 </div>
@@ -1275,16 +1531,25 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                             className="p-3.5 rounded-2xl bg-white border border-[#18181A]/10 shadow-2xs flex items-center justify-between"
                           >
                             <div className="min-w-0 flex-1 pr-3">
-                              <p className="text-sm font-bold text-[#18181A]">{med.name}</p>
+                              <p className="text-sm font-bold text-[#18181A]">
+                                {med.name}
+                              </p>
                               <p className="text-xs text-[#18181A]/60 font-medium mt-0.5">
-                                Schedule: <strong className="text-[#0B392A] font-mono">{sch.morning}-{sch.afternoon}-{sch.night}</strong> ({sch.food}) • {sch.duration}
+                                Schedule:{" "}
+                                <strong className="text-[#0B392A] font-mono">
+                                  {sch.morning}-{sch.afternoon}-{sch.night}
+                                </strong>{" "}
+                                ({sch.food}) • {sch.duration}
                               </p>
                             </div>
 
                             <button
                               onClick={() => {
                                 setShowPreGenerationConfirmation(false);
-                                setSelectedItem({ item: med, type: "medicine" });
+                                setSelectedItem({
+                                  item: med,
+                                  type: "medicine",
+                                });
                               }}
                               className="px-3 py-1 text-xs font-bold text-[#0B392A] bg-[#0B392A]/10 hover:bg-[#0B392A]/20 rounded-full cursor-pointer transition-colors"
                             >
@@ -1305,7 +1570,8 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
               {allTests.filter((t) => addedItems[t.name]).length > 0 && (
                 <div>
                   <span className="text-xs font-bold text-[#18181A]/70 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
-                    <Syringe className="h-3.5 w-3.5 text-blue-600" /> Ordered Investigations (
+                    <Syringe className="h-3.5 w-3.5 text-blue-600" /> Ordered
+                    Investigations (
                     {allTests.filter((t) => addedItems[t.name]).length})
                   </span>
                   <div className="space-y-2">
@@ -1317,8 +1583,12 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                           className="p-3.5 rounded-2xl bg-white border border-[#18181A]/10 shadow-2xs flex items-center justify-between"
                         >
                           <div>
-                            <p className="text-sm font-bold text-[#18181A]">{test.name}</p>
-                            <p className="text-xs text-[#18181A]/60">{test.category || "Diagnostic Panel"}</p>
+                            <p className="text-sm font-bold text-[#18181A]">
+                              {test.name}
+                            </p>
+                            <p className="text-xs text-[#18181A]/60">
+                              {test.category || "Diagnostic Panel"}
+                            </p>
                           </div>
                           <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
                             {test.urgency || "Standard"}
@@ -1334,10 +1604,20 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 <div className="p-4 rounded-2xl bg-sky-50/90 border border-sky-200 text-xs text-sky-950 space-y-1.5 shadow-2xs">
                   <div className="font-bold flex items-center gap-1.5 text-sky-900 text-[12.5px]">
                     <FlaskConical className="h-4 w-4 text-sky-700" />
-                    <span>Recommended Clinical Protocol: Diagnostic Tests First</span>
+                    <span>
+                      Recommended Clinical Protocol: Diagnostic Tests First
+                    </span>
                   </div>
                   <p className="text-[11.5px] leading-relaxed text-sky-900/90">
-                    Diagnostic investigations (<strong>{allTests.filter((t) => addedItems[t.name]).length} test(s)</strong>) have been ordered. The standard clinical protocol is for the patient to proceed to the diagnostic laboratory with an official <strong>Lab Requisition Slip</strong> first before definitive medication therapy is prescribed.
+                    Diagnostic investigations (
+                    <strong>
+                      {allTests.filter((t) => addedItems[t.name]).length}{" "}
+                      test(s)
+                    </strong>
+                    ) have been ordered. The standard clinical protocol is for
+                    the patient to proceed to the diagnostic laboratory with an
+                    official <strong>Lab Requisition Slip</strong> first before
+                    definitive medication therapy is prescribed.
                   </p>
                 </div>
               )}
@@ -1363,7 +1643,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                     className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[#0284C7] hover:bg-[#0369A1] rounded-full shadow-sm transition-all cursor-pointer active:scale-95"
                   >
                     <Activity className="h-3.5 w-3.5" />
-                    <span>Print Lab Requisition (Patient Goes to Lab First)</span>
+                    <span>
+                      Print Lab Requisition (Patient Goes to Lab First)
+                    </span>
                   </button>
                 )}
 
@@ -1408,23 +1690,34 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 End Clinical Consultation?
               </h3>
               <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
-                Ending this session will finalize the consultation notes and return to the appointments dashboard.
+                Ending this session will finalize the consultation notes and
+                return to the appointments dashboard.
               </p>
             </div>
 
             {/* Session Summary Snapshot */}
             <div className="bg-white border border-[#18181A]/10 rounded-2xl p-4 text-left text-xs space-y-2">
               <div className="flex justify-between items-center text-[#18181A]">
-                <span className="text-[#18181A]/50 font-semibold">Patient:</span>
-                <span className="font-bold">Rahul Sharma (CX-{patientId.slice(0, 8).toUpperCase()})</span>
+                <span className="text-[#18181A]/50 font-semibold">
+                  Patient:
+                </span>
+                <span className="font-bold">
+                  Rahul Sharma (CX-{patientId.slice(0, 8).toUpperCase()})
+                </span>
               </div>
               <div className="flex justify-between items-center text-[#18181A]">
-                <span className="text-[#18181A]/50 font-semibold">Prescriptions Added:</span>
-                <span className="font-bold text-[#0B392A]">{Object.keys(addedItems).length} item(s)</span>
+                <span className="text-[#18181A]/50 font-semibold">
+                  Prescriptions Added:
+                </span>
+                <span className="font-bold text-[#0B392A]">
+                  {Object.keys(addedItems).length} item(s)
+                </span>
               </div>
               <div className="flex justify-between items-center text-[#18181A]">
                 <span className="text-[#18181A]/50 font-semibold">Status:</span>
-                <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-[10.5px]">Ready to Complete</span>
+                <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-[10.5px]">
+                  Ready to Complete
+                </span>
               </div>
             </div>
 
@@ -1463,7 +1756,8 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 Skip Current Patient & Start New Session?
               </h3>
               <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
-                This will defer the current patient and immediately initiate a fresh new consultation session.
+                This will defer the current patient and immediately initiate a
+                fresh new consultation session.
               </p>
             </div>
 
@@ -1479,7 +1773,9 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 onClick={() => {
                   setShowSkipPatientModal(false);
                   const hexTime = Date.now().toString(16);
-                  const randomHex = Math.floor(Math.random() * 0xffffffffff).toString(16).padStart(10, '0');
+                  const randomHex = Math.floor(Math.random() * 0xffffffffff)
+                    .toString(16)
+                    .padStart(10, "0");
                   const newSessionId = `6a882cbd${hexTime.slice(-6)}${randomHex.slice(-10)}`;
                   router.push(`/dashboard/session/${newSessionId}`);
                 }}
@@ -1508,7 +1804,10 @@ export function AIInsights({ patientId, insights }: AIInsightsProps) {
                 Cannot Generate Empty Prescription
               </h3>
               <p className="text-xs text-[#18181A]/60 mt-1 leading-relaxed">
-                You haven&apos;t added any medications or lab tests to the prescription list yet. Please click the <strong>+</strong> button on any suggested medication or test to configure dosage and add it to the Rx.
+                You haven&apos;t added any medications or lab tests to the
+                prescription list yet. Please click the <strong>+</strong>{" "}
+                button on any suggested medication or test to configure dosage
+                and add it to the Rx.
               </p>
             </div>
 

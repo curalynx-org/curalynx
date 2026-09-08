@@ -13,7 +13,10 @@ export default function SessionPage() {
   const patientId = params.id as string;
 
   const [messages, setMessages] = useState<any[]>([]);
-  const [insights, setInsights] = useState<{ medicines: string[]; tests: string[] }>({
+  const [insights, setInsights] = useState<{
+    medicines: string[];
+    tests: string[];
+  }>({
     medicines: [],
     tests: [],
   });
@@ -29,7 +32,9 @@ export default function SessionPage() {
   }, [isRecording]);
 
   useEffect(() => {
-    historyRef.current = messages.map((m) => `${m.speaker}: ${m.text}`).join("\n");
+    historyRef.current = messages
+      .map((m) => `${m.speaker}: ${m.text}`)
+      .join("\n");
   }, [messages]);
 
   const analyzeSpokenText = async (text: string) => {
@@ -56,23 +61,23 @@ export default function SessionPage() {
             const incomingMeds = data.insights.medicines || [];
             const incomingMedNames = new Set(
               incomingMeds.map((m: any) =>
-                typeof m === "string" ? m : m.name
-              )
+                typeof m === "string" ? m : m.name,
+              ),
             );
             const remainingMeds = prev.medicines.filter(
               (m: any) =>
-                !incomingMedNames.has(typeof m === "string" ? m : m.name)
+                !incomingMedNames.has(typeof m === "string" ? m : m.name),
             );
 
             const incomingTests = data.insights.tests || [];
             const incomingTestNames = new Set(
               incomingTests.map((t: any) =>
-                typeof t === "string" ? t : t.name
-              )
+                typeof t === "string" ? t : t.name,
+              ),
             );
             const remainingTests = prev.tests.filter(
               (t: any) =>
-                !incomingTestNames.has(typeof t === "string" ? t : t.name)
+                !incomingTestNames.has(typeof t === "string" ? t : t.name),
             );
 
             return {
@@ -90,11 +95,12 @@ export default function SessionPage() {
 
   const startSpeechRecognition = useCallback(() => {
     const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert(
-        "Browser Speech Recognition is not supported on this browser. Please use Google Chrome, Microsoft Edge, or Safari."
+        "Browser Speech Recognition is not supported on this browser. Please use Google Chrome, Microsoft Edge, or Safari.",
       );
       return;
     }
@@ -125,7 +131,9 @@ export default function SessionPage() {
       recognition.onerror = (event: any) => {
         console.warn("Speech recognition notice:", event.error);
         if (event.error === "not-allowed") {
-          alert("Microphone permission was denied. Please allow microphone access.");
+          alert(
+            "Microphone permission was denied. Please allow microphone access.",
+          );
           setIsRecording(false);
         }
       };
@@ -177,16 +185,16 @@ export default function SessionPage() {
   }, []);
 
   return (
-    <div className="flex h-full w-full bg-[#FDFBF2] overflow-hidden flex-col lg:flex-row font-sans text-[#18181A]">
+    <div className="flex min-h-screen w-full flex-col overflow-y-auto bg-[#FDFBF2] font-sans text-[#18181A] lg:h-full lg:flex-row lg:overflow-hidden">
       {/* Left Sidebar: Top = Patient Details, Bottom = Live Transcription (Naturally Open & Visible) */}
-      <aside className="w-full lg:w-80 xl:w-[380px] border-r border-[#18181A]/10 flex-shrink-0 flex flex-col h-full overflow-hidden bg-transparent">
+      <aside className="flex w-full shrink-0 flex-col border-b border-[#18181A]/10 bg-transparent lg:h-full lg:w-80 lg:border-b-0 lg:border-r xl:w-[380px]">
         {/* Top: Patient Details & Medical History */}
-        <div className="flex-1 min-h-0 overflow-y-auto bg-white/30">
+        <div className="min-h-[280px] flex-1 overflow-y-auto bg-white/30 lg:min-h-0">
           <PatientSidebar patientId={patientId} />
         </div>
 
         {/* Bottom: Live Transcription */}
-        <div className="h-[250px] xl:h-[280px] flex-shrink-0 border-t border-[#18181A]/10 bg-[#FDFBF2] flex flex-col overflow-hidden">
+        <div className="h-[320px] shrink-0 border-t border-[#18181A]/10 bg-[#FDFBF2] lg:h-[250px] xl:h-[280px]">
           <LiveTranscript
             patientId={patientId}
             messages={messages}
@@ -197,7 +205,7 @@ export default function SessionPage() {
       </aside>
 
       {/* Main Right Area: Cura AI Insights, Medications & Tests */}
-      <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-transparent px-6 xl:px-8 pt-5 pb-5">
+      <main className="flex min-w-0 flex-1 flex-col overflow-visible bg-transparent px-3 py-3 sm:px-5 lg:h-full lg:overflow-hidden lg:px-6 lg:py-5 xl:px-8">
         <AIInsights patientId={patientId} insights={insights} />
       </main>
     </div>
