@@ -56,7 +56,7 @@ export function AddPatientModal({ isOpen, onClose }: AddPatientModalProps) {
         body: JSON.stringify({
           providerId: user.id,
           firstName,
-          lastName: lastName || "Unknown",
+          lastName,
           dateOfBirth,
           gender,
           contactNumber,

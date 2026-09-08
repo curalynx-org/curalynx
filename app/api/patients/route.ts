@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { providerId, firstName, lastName, dateOfBirth, gender, contactNumber, medicalHistory, activeMedications } = body;
 
-    if (!providerId || !firstName || !lastName || !dateOfBirth) {
+    if (!providerId || !firstName || !dateOfBirth) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     const newPatient = await PatientProfile.create({
       providerId,
       firstName,
-      lastName,
+      lastName: lastName || "",
       dateOfBirth: new Date(dateOfBirth),
       gender,
       contactNumber,
